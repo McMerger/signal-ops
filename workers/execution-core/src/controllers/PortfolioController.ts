@@ -141,14 +141,20 @@ export class PortfolioController {
 
             const riskLevel = this.calculateRiskLevel(openPositions, totalExposure);
 
+            // Get actual limits for this user (e.g., dynamically check if beginner)
+            // Hardcoded user ID for now, consistent with other controllers
+            const accountId = "DEFAULT_ACCOUNT";
+            const limits = this.riskService.getLimitsForAccount(accountId);
+
             return c.json({
                 total_exposure: totalExposure,
                 open_positions: openPositions,
                 var_95_30d: var95,
                 risk_level: riskLevel,
                 risk_limits: {
-                    max_exposure: 100000, // From RiskService default
-                    max_position: 50000
+                    max_exposure: limits.maxExposure,
+                    max_position: limits.maxPositionSize,
+                    max_drawdown: limits.maxDrawdownPct
                 }
             });
         } catch (e: any) {

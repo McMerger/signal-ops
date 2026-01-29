@@ -130,6 +130,7 @@ export class StrategyController {
                 {
                     accountId: "DEFAULT_ACCOUNT", // Single user logic for now
                     asset,
+                    assetClass: body.asset_class || "UNKNOWN", // Strategy must provide this now
                     side,
                     quantity,
                     price
@@ -142,6 +143,16 @@ export class StrategyController {
 
                     if (!pos) return 0;
                     return Math.abs((pos.quantity as number) * (pos.current_price as number));
+                },
+                async (accountId: string, assetClass: string) => {
+                    // Helper to get Total Exposure for this Asset Class
+                    const result = await c.env.SIGNAL_DB.prepare(`
+                        SELECT SUM(ABS(quantity * current_price)) as total 
+                        FROM positions 
+                        WHERE asset_class = ?
+                    `).bind(assetClass).first();
+
+                    return (result?.total as number) || 0;
                 }
             );
 

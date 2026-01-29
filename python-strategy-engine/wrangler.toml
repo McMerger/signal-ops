@@ -1,0 +1,7 @@
+name = "strategy-engine"
+main = "worker.py"
+compatibility_date = "2024-03-12"
+compatibility_flags = ["python_workers"]
+
+# [vars]
+# API_KEY = "value"

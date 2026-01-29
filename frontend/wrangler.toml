@@ -1,0 +1,10 @@
+name = "signalops-frontend"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Cloudflare Pages deployment settings
+pages_build_output_dir = ".vercel/output/static"
+
+# Environment variables (secrets should be set in Cloudflare Dashboard)
+[vars]
+ENVIRONMENT = "production"

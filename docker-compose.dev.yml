@@ -1,0 +1,66 @@
+# Docker Compose override for development
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+# Or set COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml in .env
+
+version: '3.8'
+
+services:
+  # Frontend with hot reload and optimized build
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+      cache_from:
+        - signalops-frontend:latest
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true # For WSL file watching
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    stdin_open: true
+    tty: true
+
+  # Python with hot reload
+  python-strategy:
+    build:
+      cache_from:
+        - signalops-python:latest
+    environment:
+      - PYTHONUNBUFFERED=1
+      - WATCHFILES_FORCE_POLLING=true # For WSL file watching
+    volumes:
+      - ./python-strategy-engine:/app
+      - strategy_logs:/app/logs
+    command: python grpc_server.py
+
+  # Go with live reload (if using air or similar)
+  go-execution:
+    build:
+      cache_from:
+        - signalops-go:latest
+
+  # Java with hot reload
+  java-risk:
+    build:
+      cache_from:
+        - signalops-java:latest
+
+  # C++ (rebuild required for changes)
+  cpp-signal:
+    build:
+      cache_from:
+        - signalops-cpp:latest
+
+  # Streamlit with hot reload
+  streamlit-dashboard:
+    build:
+      cache_from:
+        - signalops-streamlit:latest
+    volumes:
+      - ./legacy_dashboard:/app
+    command: streamlit run app.py --server.address=0.0.0.0 --server.fileWatcherType=poll
+
+volumes:
+  strategy_logs:

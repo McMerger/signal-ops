@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Solarized Light Theme */
+    --background: 44 87% 94%;
+    /* Base3 #fdf6e3 */
+    --foreground: 200 13% 45%;
+    /* Base00 #657b83 */
+    --card: 44 47% 88%;
+    /* Base2 #eee8d5 */
+    --card-foreground: 200 13% 45%;
+    /* Base00 */
+    --popover: 44 87% 94%;
+    /* Base3 */
+    --popover-foreground: 200 13% 45%;
+    --primary: 205 69% 49%;
+    /* Blue #268bd2 */
+    --primary-foreground: 44 87% 94%;
+    --secondary: 44 47% 88%;
+    /* Base2 */
+    --secondary-foreground: 200 13% 45%;
+    --muted: 44 47% 88%;
+    /* Base2 */
+    --muted-foreground: 193 14% 40%;
+    /* Base01 #586e75 (Emphasis) */
+    --accent: 44 47% 88%;
+    /* Base2 */
+    --accent-foreground: 200 13% 45%;
+    --destructive: 359 71% 52%;
+    /* Red #dc322f */
+    --destructive-foreground: 44 87% 94%;
+    --border: 193 14% 40%;
+    /* Base01 (Stronger borders for IDE feel) */
+    --input: 44 47% 88%;
+    /* Base2 */
+    --ring: 205 69% 49%;
+    /* Blue */
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Solarized Dark (Preserved as option) */
+    --background: 192 100% 11%;
+    /* Base03 #002b36 */
+    --foreground: 180 8% 58%;
+    /* Base0 #839496 */
+    --card: 193 100% 13%;
+    /* Base02 #073642 */
+    --card-foreground: 180 8% 58%;
+    --popover: 192 100% 11%;
+    --popover-foreground: 180 8% 58%;
+    --primary: 205 69% 49%;
+    /* Blue */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 193 100% 13%;
+    /* Base02 */
+    --secondary-foreground: 180 8% 58%;
+    --muted: 193 100% 13%;
+    --muted-foreground: 194 14% 40%;
+    /* Base01 */
+    --accent: 193 100% 13%;
+    --accent-foreground: 180 8% 58%;
+    --destructive: 359 71% 52%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 193 100% 13%;
+    --input: 193 100% 13%;
+    --ring: 205 69% 49%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+}

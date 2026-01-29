@@ -1,0 +1,28 @@
+# syntax=docker/dockerfile:1.4
+# Development Dockerfile for Next.js frontend with BuildKit optimizations
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies for better caching
+# This layer only rebuilds when package files change
+COPY package*.json ./
+
+# Use BuildKit cache mount for npm cache
+# This dramatically speeds up dependency installation
+RUN --mount=type=cache,target=/root/.npm \
+    npm install --legacy-peer-deps
+
+# Copy source code
+# This layer rebuilds on any code change, but dependencies are cached above
+COPY . .
+
+# Expose port
+EXPOSE 3000
+
+# Set environment for development
+ENV NODE_ENV=development
+
+# Start development server with hot reload
+CMD ["npm", "run", "dev"]

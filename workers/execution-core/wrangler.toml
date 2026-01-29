@@ -1,0 +1,13 @@
+name = "execution-core"
+main = "src/index.ts"
+compatibility_date = "2024-02-08"
+
+# Bindings to other resources (D1, KV, Queues) will go here
+# [[kv_namespaces]]
+# binding = "SIGNAL_KV"
+# id = "<ID>"
+
+# [[d1_databases]]
+# binding = "SIGNAL_DB"
+# database_name = "signal-db"
+# database_id = "<ID>"

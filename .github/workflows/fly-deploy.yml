@@ -1,0 +1,99 @@
+name: Deploy Backend to Fly.io
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'go-execution-core/**'
+      - 'python-strategy-engine/**'
+      - 'java-risk-manager/**'
+      - 'proto/**'
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to deploy (all, go, python, java)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - go
+          - python
+          - java
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      go: ${{ steps.changes.outputs.go }}
+      python: ${{ steps.changes.outputs.python }}
+      java: ${{ steps.changes.outputs.java }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            go:
+              - 'go-execution-core/**'
+              - 'proto/**'
+            python:
+              - 'python-strategy-engine/**'
+            java:
+              - 'java-risk-manager/**'
+              - 'proto/**'
+
+  deploy-go:
+    needs: detect-changes
+    if: |
+      github.event_name == 'workflow_dispatch' && (github.event.inputs.service == 'all' || github.event.inputs.service == 'go') ||
+      github.event_name == 'push' && needs.detect-changes.outputs.go == 'true'
+    runs-on: ubuntu-latest
+    name: Deploy Go Execution Engine
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+      
+      - name: Deploy to Fly.io
+        run: flyctl deploy --config go-execution-core/fly.toml --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  deploy-python:
+    needs: detect-changes
+    if: |
+      github.event_name == 'workflow_dispatch' && (github.event.inputs.service == 'all' || github.event.inputs.service == 'python') ||
+      github.event_name == 'push' && needs.detect-changes.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    name: Deploy Python Strategy Engine
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+      
+      - name: Deploy to Fly.io
+        run: flyctl deploy --config python-strategy-engine/fly.toml --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  deploy-java:
+    needs: detect-changes
+    if: |
+      github.event_name == 'workflow_dispatch' && (github.event.inputs.service == 'all' || github.event.inputs.service == 'java') ||
+      github.event_name == 'push' && needs.detect-changes.outputs.java == 'true'
+    runs-on: ubuntu-latest
+    name: Deploy Java Risk Manager
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+      
+      - name: Deploy to Fly.io
+        run: flyctl deploy --config java-risk-manager/fly.toml --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+

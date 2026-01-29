@@ -1,0 +1,71 @@
+"use client";
+
+import { ScrollManager } from "@/components/landing/scroll-manager";
+import { FeatureShowcase } from "@/components/landing/feature-showcase";
+import { WarpTransitionProvider, useWarpTransition } from "@/components/landing/warp-transition";
+import { VoidSingularity } from "@/components/canvas/public/void-singularity";
+import { useState } from "react";
+import { PolyglotEngine } from "@/components/canvas/public/polyglot-engine"; // Re-using engine for features if needed, or just standard showcase. Keeping showcase.
+
+function WelcomeContent() {
+    const { startTransition } = useWarpTransition();
+    const [warping, setWarping] = useState(false);
+
+    const handleLaunch = () => {
+        setWarping(true);
+        startTransition("/dashboard");
+    };
+
+    return (
+        <ScrollManager>
+            <main className="min-h-screen bg-background selection:bg-blue-500/30 relative overflow-hidden">
+                {/* 3D Background */}
+                <VoidSingularity warp={warping} />
+
+                {/* Hero Content - Overlay */}
+                <div className="relative z-10 min-h-screen flex flex-col items-center justify-center text-center px-4">
+                    <h1 className="text-7xl font-bold text-foreground mb-6 tracking-tighter mix-blend-multiply font-cosmic uppercase">
+                        SIGNAL <span className="text-blue-600">OPS</span>
+                    </h1>
+                    <p className="text-xl text-zinc-600 max-w-2xl mb-10 font-medium">
+                        Institutional-grade algorithmic execution. <br />
+                        <span className="text-blue-600 font-bold">Go</span> speed. <span className="text-amber-600 font-bold">Python</span> intelligence.
+                    </p>
+                    <button
+                        onClick={handleLaunch}
+                        className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-[#002b36] px-8 py-4 font-medium text-white transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(38,139,210,0.5)] border border-[#586e75]"
+                    >
+                        <span className="mr-2">Enter The Grid</span>
+                        <span className="transition-transform group-hover:translate-x-1">→</span>
+                    </button>
+                </div>
+
+                <div className="relative z-10 bg-white/80 backdrop-blur-xl border-t border-zinc-200">
+                    <FeatureShowcase />
+                </div>
+
+                {/* Footer / CTA Section */}
+                <div className="h-[50vh] w-full bg-gradient-to-b from-white to-zinc-100 flex flex-col items-center justify-center text-center px-4 relative overflow-hidden z-10">
+                    <div className="relative z-10">
+                        <h2 className="text-4xl font-bold text-foreground mb-8 tracking-tight">Ready to deploy?</h2>
+                        <button
+                            onClick={handleLaunch}
+                            className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-[#002b36] px-8 py-4 font-medium text-white transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(38,139,210,0.5)] border border-[#586e75]"
+                        >
+                            <span className="mr-2">Launch Dashboard</span>
+                            <span className="transition-transform group-hover:translate-x-1">→</span>
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </ScrollManager>
+    );
+}
+
+export default function WelcomePage() {
+    return (
+        <WarpTransitionProvider>
+            <WelcomeContent />
+        </WarpTransitionProvider>
+    );
+}

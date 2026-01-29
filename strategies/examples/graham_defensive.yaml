@@ -1,0 +1,41 @@
+# Example Strategy: Graham Defensive with Event Filter
+
+strategy:
+  name: "Graham_Defensive_Multi_Source"
+  assets: ["AAPL", "MSFT", "GOOGL"]
+  
+  rules:
+    # Rule 1: Fundamental Value Check
+    - id: "fundamental_value"
+      source: "fundamental"
+      conditions:
+        - metric: "price_to_book"
+          operator: "<"
+          threshold: 1.5
+        - metric: "price_to_sales"
+          operator: "<"
+          threshold: 3.0
+    
+    # Rule 2: Macro Risk Filter (Polymarket)
+    - id: "macro_risk_filter"
+      source: "polymarket"
+      conditions:
+        - metric: "us_recession_2025_odds"
+          operator: "<"
+          threshold: 0.25
+        - metric: "major_conflict_2025_odds"
+          operator: "<"
+          threshold: 0.15
+    
+    # Rule 3: Technical Confirmation
+    - id: "technical_confirmation"
+      source: "technical"
+      conditions:
+        - metric: "rsi_14"
+          operator: "<"
+          threshold: 35
+  
+  execution:
+    require_confirmations: 2  # 2 of 3 rules must pass
+    position_size: 0.02       # 2% of portfolio per trade
+    action_mode: "notify"     # Options: notify, auto, paper

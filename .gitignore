@@ -1,0 +1,57 @@
+# Build artifacts
+java-risk-manager/target/
+**/target/
+**/__pycache__/
+*.pyc
+*.class
+*.o
+*.so
+*.dylib
+
+# Compiled binaries
+cpp-signal-core/build/
+go-execution-core/signalops
+go-execution-core/*.exe
+*.exe
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dependencies
+node_modules/
+.venv/
+venv/
+
+# Environment
+.env.local
+.env.*.local
+
+# Test coverage
+coverage/
+*.cover
+.coverage
+
+# Frontend
+frontend/.next/
+frontend/out/
+frontend/build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

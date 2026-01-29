@@ -1,0 +1,238 @@
+# Shopify Editions Winter 2026 - Technical Breakdown
+
+**Author:** Arnaud Tanielian (@Danetag)
+**Project Duration:** ~10 weeks
+**Thread Date:** December 17, 2025
+
+---
+
+## Overview
+
+Shopify Editions Winter 2026 is a highly technical, art-inspired web experience that pushes the boundaries of WebGL, 3D rendering, and web performance. The project showcases classical paintings brought to life with 3D depth, custom animations, and interactive elements.
+
+---
+
+## ???? WebGL & 3D Rendering
+
+### Core Technology Stack
+- **Three.js** and **React Three Fiber (R3F)** as the foundation
+- Each painting is a unique WebGL scene rendered as an R3F Portal
+- Custom shaders, post-processing effects, and animations for each scene
+
+### 3D Model Creation Methods
+
+#### Method 1: Depth Map Displacement
+- Generate a depth map from static paintings
+- Use the depth map to displace a densely subdivided plane
+- Creates depth while preserving fine details from the original artwork
+
+#### Method 2: AI-Assisted 3D Modeling
+- Leverage **@tripoai** to generate base mesh silhouettes
+- Paint textures onto meshes using **Substance Painter**
+- Custom modifications in **Blender** (rigging, animation)
+- Export models as GLTF files
+
+---
+
+## ⚡ Performance Optimizations
+
+### GLTF File Optimization
+- Built a **custom Electron app** to:
+  - Reduce polygon count
+  - Convert textures to GPU-friendly **Basis/ETC1S** format
+- Compressed textures use **10-100x less memory**
+- Instant uploads prevent decoding lags during scrolling
+
+### Shader Optimizations
+- Compute noise textures as **DataTextures** on the first frame
+- Add simple animations using cos/sin functions on top
+- Optimized "sobel effect" using **fwidth**, saving 3 texture lookups
+
+### Quality Tier System (4 Levels)
+1. **High:** Full 3D with post-processing
+2. **Medium/Low:** Simplified textures and geometry
+3. **Fallback:** Static images replace 3D
+4. **WebGL Fallback:** Pure CSS
+
+- Auto-detection based on user's GPU capacity
+- Real-time downgrade based on current FPS
+
+---
+
+## ???? Animation & Workflow
+
+### Theatre.js Integration
+- **@theatre_js** revolutionized the animation workflow
+- Designers get After Effects-like control over the website
+- Control absolutely everything without code changes
+- Animation iteration time: **hours → minutes**
+
+### Rive Optimizations
+- **@rive_app** optimization critical due to 20+ animations on top of WebGL
+- **Hover animations:** Use first frame as poster, play Rive on hover
+- **Linear animations:** Custom Rive-to-video exporter runs them off main thread
+
+---
+
+## ???? Easter Egg: WebRTC Window Streaming
+
+### Technical Implementation
+- Stream main Three.js canvas to popup via **WebRTC at 60fps**
+- No duplicate scene rendering needed
+- **BroadcastChannel** syncs position/size/scroll between windows
+- Creates transparent window effect with real-time event messaging
+
+### Popup Rendering
+- Lightweight Three.js scene in popup
+- Video feed textured onto cube matching main window dimensions
+- Composited with custom shaders
+- Enables graffiti black-light effect
+
+---
+
+## ???? Front-End Optimizations
+
+### React Performance
+- Optimized every React render loop
+- Used **Zustand** for state management when needed
+
+### Skills Cloud Component
+- Gets live **Sidekick usage** data
+- Sent via **Server-Sent Events (SSE)**
+
+### Intro Sequence
+- Fast loading with **CSS + SVG** transitions/animations
+- Uses `pathLength` attribute to draw DaVinci lines
+- `transform-box` property animates title text
+
+### CSS Details
+- Custom CSS counter for **Roman Numerals** instead of decimal lists
+- Attention to classical art theme throughout
+
+---
+
+## ???? Bundle Size & Loading
+
+### Final Size Breakdown
+- **Mobile:** 2.4MB (target was 2MB)
+- **Desktop:** 4.5MB
+
+### Optimization Strategies
+- Route splitting
+- Dynamic imports
+- Aggressive tree shaking
+- Every PR scrutinized for size impact
+
+---
+
+## ????️ Shopify Platform Integration
+
+### Real Shopify Store
+The entire Editions Winter 2026 experience is a **real, live Shopify store**!
+
+### Shopify Features Leveraged
+- **Metaobjects & Metafields**
+- **Products/Collections**
+- **Markets** (global storefronts)
+- **Translate & Adapt**
+- **Shopify CDN**
+- **Custom apps** with Admin API integrations
+
+### Merch Drop Features
+- **Managed Markets** for seamless global shipping
+- **Shopify Fulfillment Network** to sync data with 3PL provider
+
+---
+
+## ???? Development Team
+
+- @mcneillie84276
+- @JoshSanger_eth
+- @kylewayneluck
+- @jh3yy
+- @athlndr
+- @celsostories
+- @ArthurCloche
+- @damienmortini
+- @krystalcampioni
+
+---
+
+## ???? Key Takeaways
+
+### Technical Excellence
+1. **Multi-layered optimization approach** - from GPU to bundle size
+2. **Custom tooling** when off-the-shelf solutions don't cut it (Electron app for GLTF optimization)
+3. **Progressive enhancement** with 4-tier quality system
+4. **Designer empowerment** through Theatre.js
+
+### Performance Philosophy
+- Every millisecond counts
+- Balance between visual quality and performance
+- Real-time adaptation to user's hardware
+- Aggressive optimization at every layer
+
+### Workflow Innovation
+- Theatre.js for designer autonomy
+- Custom exporters for Rive animations
+- WebRTC for creative easter eggs
+- Blending modern web APIs creatively
+
+### Production Readiness
+- Built on real Shopify infrastructure
+- Not just a demo - actual e-commerce functionality
+- Global shipping and fulfillment integration
+- 10 weeks from concept to launch
+
+---
+
+## ???? Community Reception
+
+- **61.5K+ views** on main tweet
+- **874+ likes**
+- **100+ retweets**
+- Praised as potential "site of the year"
+- Thread went viral and was featured on Thread Reader App
+
+---
+
+## ???? Links & Resources
+
+- Original thread: https://x.com/Danetag/status/2001335712982147307
+- Thread compilation: threadreaderapp.com
+- Shopify Editions Winter 2026 website (live Shopify store)
+
+---
+
+## Technologies Summary
+
+**3D & Graphics:**
+- Three.js, React Three Fiber (R3F)
+- WebGL, Custom Shaders
+- Blender, Substance Painter
+- TripoAI (AI mesh generation)
+
+**Animation:**
+- Theatre.js
+- Rive
+- CSS/SVG animations
+
+**Performance:**
+- Electron (custom GLTF optimizer)
+- Basis/ETC1S texture compression
+- WebRTC for canvas streaming
+- BroadcastChannel API
+
+**State & Data:**
+- React, Zustand
+- Server-Sent Events (SSE)
+
+**E-commerce:**
+- Shopify platform
+- Shopify Admin API
+- Managed Markets
+- Fulfillment Network
+
+---
+
+*This breakdown demonstrates how modern web technologies can be pushed to create museum-quality interactive art experiences while maintaining production-grade performance and real e-commerce functionality.*

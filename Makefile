@@ -1,90 +1,99 @@
-.PHONY: proto docker-build docker-up docker-down test clean help
+# Makefile for SignalOps Development
 
-# Generate gRPC code from protobuf definitions
-proto:
-	@echo "Generating gRPC code..."
-	cd proto && ./generate.sh
+.PHONY: help start stop restart logs clean db-reset test dev-local dev-local-backend dev-local-frontend dev-docker dev-docker-minimal
 
-# Build all Docker images
-docker-build:
-	@echo "Building Docker images..."
-	docker-compose build
+help: ## Show this help message
+	@echo 'Usage: make [target]'
+	@echo ''
+	@echo 'Available targets:'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-# Start all services
-docker-up:
-	@echo "Starting SignalOps services..."
+# ============================================
+# Local Development
+# ============================================
+
+dev-local: ## Start local development (all services)
+	@./dev.sh local
+
+dev-local-backend: ## Start only backend services locally
+	@./dev.sh local backend
+
+dev-local-frontend: ## Start only frontend locally
+	@./dev.sh local frontend
+
+# ============================================
+# Docker Development
+# ============================================
+
+dev-docker: ## Start Docker development (all services)
+	@./dev.sh docker
+
+dev-docker-minimal: ## Start minimal Docker setup (postgres, redis, go, frontend)
+	@./dev.sh docker minimal
+
+dev-docker-local: ## Start Docker with local development optimizations
+	docker-compose -f docker-compose.local.yml up
+
+start: ## Start all services
 	docker-compose up -d
-	@echo "Services running:"
-	@echo "  Dashboard: http://localhost:8501"
-	@echo "  Go API: http://localhost:8080"
-	@echo "  PostgreSQL: localhost:5432"
-	@echo "  Redis: localhost:6379"
 
-# Stop all services
-docker-down:
-	@echo "Stopping services..."
+stop: ## Stop all services
 	docker-compose down
 
-# Stop and remove volumes
-docker-clean:
-	@echo "Cleaning up containers and volumes..."
-	docker-compose down -v
+restart: ## Restart all services
+	docker-compose restart
 
-# Run Python tests
-test-python:
-	cd python-strategy-engine && python -m pytest tests/
-
-# Run Go tests
-test-go:
-	cd go-execution-core && go test ./...
-
-# Run all tests
-test: test-python test-go
-
-# Clean generated files
-clean:
-	rm -rf python-strategy-engine/grpc_generated
-	rm -rf go-execution-core/pb
-	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
-	find . -type f -name "*.pyc" -delete 2>/dev/null || true
-
-# Install Python dependencies
-install-python:
-	pip install -r requirements.txt
-
-# Install Go dependencies
-install-go:
-	cd go-execution-core && go mod download
-
-# Full setup
-setup: install-python install-go proto
-	@echo "Setup complete!"
-
-# Show logs
-logs:
+logs: ## View logs from all services
 	docker-compose logs -f
 
-# Show logs for specific service
-logs-python:
+logs-execution: ## View Execution Core logs
+	docker-compose logs -f execution-core
+
+logs-python: ## View Python strategy engine logs
 	docker-compose logs -f python-strategy
 
-logs-go:
-	docker-compose logs -f go-execution
+logs-frontend: ## View frontend logs
+	docker-compose logs -f frontend
 
-logs-postgres:
-	docker-compose logs -f postgres
+clean: ## Stop and remove all containers, volumes
+	docker-compose down -v
+	rm -rf postgres_data redis_data strategy_logs
 
-# Help
-help:
-	@echo "SignalOps Makefile Commands:"
-	@echo ""
-	@echo "  make proto          - Generate gRPC code from protobuf"
-	@echo "  make docker-build   - Build all Docker images"
-	@echo "  make docker-up      - Start all services"
-	@echo "  make docker-down    - Stop all services"
-	@echo "  make docker-clean   - Stop and remove all volumes"
-	@echo "  make test           - Run all tests"
-	@echo "  make setup          - Install dependencies and generate code"
-	@echo "  make logs           - Show all logs"
-	@echo "  make clean          - Clean generated files"
-	@echo "  make help           - Show this help message"
+db-reset: ## Reset database (WARNING: destroys all data)
+	docker-compose down postgres
+	docker volume rm signalops_postgres_data || true
+	docker-compose up -d postgres
+
+db-shell: ## Open PostgreSQL shell
+	docker exec -it signalops-postgres psql -U signalops -d signalops
+
+redis-cli: ## Open Redis CLI
+	docker exec -it signalops-redis redis-cli
+
+build: ## Build all Docker images
+	docker-compose build
+
+rebuild: ## Rebuild all Docker images without cache
+	docker-compose build --no-cache
+
+ps: ## Show running containers
+	docker-compose ps
+
+health: ## Check health of all services
+	@echo "Checking service health..."
+	@curl -s http://localhost:8080/health | jq . || echo "Go backend not responding"
+	@curl -s http://localhost:3000 > /dev/null && echo "Frontend: OK" || echo "Frontend: DOWN"
+	@docker exec signalops-postgres pg_isready -U signalops && echo "PostgreSQL: OK" || echo "PostgreSQL: DOWN"
+	@docker exec signalops-redis redis-cli ping && echo "Redis: OK" || echo "Redis: DOWN"
+
+dev: ## Start development environment (frontend + backend only)
+	docker-compose up -d postgres redis go-execution frontend
+
+prod: ## Start production environment (all services)
+	docker-compose up -d
+
+test-integration: ## Run integration tests
+	./test-integration.sh
+
+test-e2e: ## Run end-to-end tests
+	./test-e2e.sh

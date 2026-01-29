@@ -5,7 +5,7 @@ syntax = "proto3";
 
 package signalops;
 
-option go_package = "github.com/signalops/execution-engine/pb";
+option go_package = "execution-engine/pb";
 
 import "google/protobuf/timestamp.proto";
 

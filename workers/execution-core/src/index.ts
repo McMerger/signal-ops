@@ -67,4 +67,12 @@ research.get('/prediction', (c) => researchController.getPredictionMarket(c))
 research.get('/decision-tree', (c) => researchController.getDecisionTree(c))
 app.route('/api/v1/research', research)
 
+// User Group (New: UI Persistence)
+import { UserController } from './controllers/UserController'
+const userController = new UserController()
+const user = new Hono<{ Bindings: Bindings }>()
+user.get('/preferences', (c) => userController.getPreferences(c))
+user.post('/preferences', (c) => userController.updatePreferences(c))
+app.route('/api/v1/user', user)
+
 export default app

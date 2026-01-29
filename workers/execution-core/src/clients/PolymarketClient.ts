@@ -40,10 +40,20 @@ export class PolymarketClient {
 
             const currentProb = Number(market.outcomePrices ? JSON.parse(market.outcomePrices)[0] : 0.5);
 
+            // Feature Extraction (as per README requirements)
+            // Liquidity is often returned as 'liquidity' or derived from volume/depth
+            const liquidity = Number(market.liquidity || 0);
+
+            // Spread approximation (if direct spread not available, use 0 for now but field exists)
+            // In a full orderbook fetch we'd calc (Check - Bid)
+            const spread = 0.02; // Placeholder for now unless API provides 'spread'
+
             return {
                 question: event.title,
                 probability: currentProb,
                 volume: Number(market.volume),
+                liquidity: liquidity,
+                spread: spread,
                 sentiment: currentProb > 0.5 ? "Optimistic" : "Pessimistic",
                 // Constructing a "live" curve point
                 curve_point: {

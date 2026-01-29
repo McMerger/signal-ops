@@ -293,6 +293,41 @@ class StrategyEvaluator:
         return triggers
 
 
+    def get_research_snapshot(self, asset: str) -> Dict[str, Any]:
+        """
+        Get a raw research snapshot without triggering a trade decision.
+        Used by the UI/API to show 'Intrinsic Value', 'Sentiment', etc.
+        """
+        # Fetch unified real data
+        try:
+            unified = self.feed.get_unified_data(
+                symbol=asset,
+                market_data={}, # Will fetch fresh if empty
+                event_config={'all': 'true'} # Broad event fetch
+            )
+            
+            # Add Kimi Analysis if available (Optional for just a snapshot to save tokens? 
+            # Or maybe we want it. Let's include it if key is present.)
+            ai_summary = None
+            if self.kimi_client:
+                 try:
+                    ai_summary = self._generate_kimi_research(asset, "ANALYSIS", unified)
+                 except:
+                    pass
+
+            return {
+                'timestamp': unified['timestamp'],
+                'asset': asset,
+                'fundamentals': unified.get('fundamentals', {}),
+                'prediction_markets': unified.get('events', {}),
+                'onchain': unified.get('onchain', {}),
+                'technicals': unified.get('technical', {}),
+                'ai_analysis': ai_summary
+            }
+        except Exception as e:
+            logger.error(f"Snapshot failed: {e}")
+            return {'error': str(e)}
+
 # Singleton instance for reuse
 _evaluator_instance: Optional[StrategyEvaluator] = None
 

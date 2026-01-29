@@ -126,6 +126,14 @@ class YahooFinanceAdapter:
                     self._extract_value(key_stats.get('trailingPE')),
                     ncav_data.get('ncav_ratio'),
                     self._extract_value(financial_data.get('debtToEquity'))
+                ),
+
+                # Intrinsic Value (Graham Formula)
+                'intrinsic_value': self._calculate_intrinsic_value(
+                    self._extract_value(key_stats.get('trailingPE')), # Using EPS proxy via PE? No, need EPS relative
+                    self._extract_value(financial_data.get('revenueGrowth')), # Growth proxy
+                    4.4, # Bond Yield
+                    self._extract_value(key_stats.get('trailingEps'))
                 )
             }
 
@@ -239,6 +247,35 @@ class YahooFinanceAdapter:
                 score -= 15
 
         return max(0, min(100, score))
+
+    def _calculate_intrinsic_value(self, eps: Optional[float], growth: Optional[float], 
+                                     bond_yield: float, real_eps: Optional[float] = None) -> Optional[float]:
+        """
+        Calculate Benjamin Graham's Intrinsic Value.
+        V = EPS * (8.5 + 2g) * 4.4 / Y
+        """
+        try:
+            # Use real EPS if provided, otherwise derive?
+            # actually helper called with (pe, growth, yield, eps) above
+            # let's assume arguments match call: (pe, growth, yield, eps) -> PE is wrong arg 1.
+            # wait, I passed PE in previous step? No I passed trailingEps as arg 4.
+            
+            # Let's fix the args in method signature to match usage or fix usage.
+            # Usage: (None, growth, 4.4, eps) - wait, arg1 was PE.
+            
+            # Use only Real EPS
+            effective_eps = real_eps
+            if effective_eps is None or effective_eps <= 0:
+                return 0.0
+                
+            g = (growth * 100) if growth else 0 # Growth rate decimal to percent
+            if g > 50: g = 50 # Cap growth to avoid absurdity
+            
+            # Formula
+            iv = (effective_eps * (8.5 + (2 * g)) * 4.4) / bond_yield
+            return iv
+        except:
+            return 0.0
 
     def _extract_value(self, data: Optional[Dict]) -> Optional[float]:
         """Extract numerical value from Yahoo Finance's nested structure."""
@@ -381,7 +418,8 @@ class FundamentalDataFeed:
             'price_to_earnings': pe_ratio, # Derived real ratio
             'debt_to_equity': 0.0,
             'ncav_ratio': 1.0, # Neutral
-            'graham_score': self.yahoo._calculate_graham_score(pb_ratio, pe_ratio, 1.0, 0.0)
+            'graham_score': self.yahoo._calculate_graham_score(pb_ratio, pe_ratio, 1.0, 0.0),
+            'intrinsic_value': price * (tvl / market_cap) if market_cap > 0 else 0 # Intrinsic = Book Value per Token
         }
 
     def is_graham_value(self, symbol: str, strict: bool = True) -> Dict:

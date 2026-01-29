@@ -39,6 +39,16 @@ async def on_fetch(request, env):
         except Exception as e:
             return Response.new(json.dumps({"error": str(e)}), status=400)
 
+    if method == "GET" and "/research" in url:
+        # Extract symbol from query params (e.g., /research/snapshot?symbol=BTC)
+        # Basic parsing or assume it's in the URL path? URL parsing in Workers:
+        from urllib.parse import parse_qs, urlparse
+        query = parse_qs(urlparse(url).query)
+        symbol = query.get('symbol', ['BTC'])[0]
+        
+        snapshot = evaluator.get_research_snapshot(symbol)
+        return Response.new(json.dumps(snapshot))
+
     if method == "GET" and "/health" in url:
         return Response.new(json.dumps({"status": "operational", "engine": "python-worker"}))
 

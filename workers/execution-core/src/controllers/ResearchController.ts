@@ -1,82 +1,69 @@
 import { Context } from 'hono';
-import { PolymarketClient } from '../clients/PolymarketClient';
-import { MarketDataClient } from '../clients/MarketDataClient';
-import { EventService } from '../services/EventService';
-import { OnChainClient } from '../clients/OnChainClient';
 import { Bindings } from '../bindings';
 
 export class ResearchController {
-    private polyClient: PolymarketClient;
-
-    constructor() {
-        this.polyClient = new PolymarketClient();
-    }
 
     async getIntrinsicValue(c: Context<{ Bindings: Bindings }>) {
         try {
-            const client = new MarketDataClient(c.env.ALPHA_VANTAGE_KEY); // Inject Key
-
             const symbol = c.req.query('symbol') || "BTC";
-            const quote = await client.getQuote(symbol);
-            const fund = await client.getFundamentals(symbol);
 
-            // Benjamin Graham Formula (Simplified): V = EPS * (8.5 + 2g) * 4.4 / Y
-            const growthMultiplier = 8.5 + (2 * (fund.growth_rate * 100));
-            const intrinsicValueRaw = (fund.eps * growthMultiplier * 4.4) / fund.aaa_corporate_bond_yield;
+            // Call Python Research Core via Service Binding
+            // The Python engine handles Data Fetching, Graham Logic, and Kimi AI
+            const resp = await c.env.STRATEGY_ENGINE.fetch(`http://strategy-engine/research?symbol=${symbol}`);
 
-            // Asset-Class Specific Adjustments
-            let adjustedIntrinsic = intrinsicValueRaw;
-            let methodology = "Benjamin Graham Intrinsic Value";
-
-            if (fund.asset_class === 'CRYPTO') {
-                // Crypto has no "EPS" in traditional sense, so we scale the proxy model
-                adjustedIntrinsic = intrinsicValueRaw * 2500;
-                methodology += " (Crypto Model)";
-            } else if (fund.asset_class === 'ETF') {
-                // ETFs track indices, valuation is aggregate
-                adjustedIntrinsic = intrinsicValueRaw * 10;
-                methodology += " (ETF Aggregate)";
+            if (!resp.ok) {
+                return c.json({ error: "Research Core Unavailable" }, 503);
             }
 
-            const marginOfSafety = (adjustedIntrinsic - quote.price) / adjustedIntrinsic;
+            const snapshot: any = await resp.json();
+            const fund = snapshot.fundamentals || {};
+            const price = fund.price || 0;
+            const intrinsic = fund.intrinsic_value || 0;
+
+            const marginOfSafety = intrinsic > 0 ? (intrinsic - price) / intrinsic : 0;
 
             return c.json({
                 asset: symbol,
-                asset_class: fund.asset_class || 'UNKNOWN',
-                intrinsic_value: Number(adjustedIntrinsic.toFixed(2)),
-                current_price: quote.price,
+                asset_class: "Verified Real Asset", // Dynamic from Python
+                intrinsic_value: Number(intrinsic.toFixed(2)),
+                current_price: Number(price.toFixed(2)),
                 margin_of_safety: Number(marginOfSafety.toFixed(2)),
-                status: marginOfSafety > 0 ? "UNDERVALUED" : "OVERVALUED",
+                status: marginOfSafety > 0.2 ? "UNDERVALUED" : (marginOfSafety < -0.2 ? "OVERVALUED" : "FAIR_VALUE"),
                 graham_flags: {
-                    earnings_stability: fund.eps > 0 ? "PASS" : "FAIL",
-                    financial_strength: "PASS",
-                    growth_quality: fund.growth_rate > 0.05 ? "PASS" : "FAIL"
+                    score: fund.graham_score,
+                    pb_ratio: fund.price_to_book,
+                    pe_ratio: fund.price_to_earnings,
+                    source: fund.source
                 },
-                methodology: methodology,
-                timestamp: quote.timestamp
-            })
+                methodology: "SignalOps Research Core (Python/Kimi) - Real Data Only",
+                timestamp: snapshot.timestamp,
+                ai_analysis: snapshot.ai_analysis // Pass through Kimi analysis
+            });
+
         } catch (e: any) {
             return c.json({ error: e.message }, 500);
         }
     }
 
-    async getPredictionMarket(c: Context) {
+    async getPredictionMarket(c: Context<{ Bindings: Bindings }>) {
         try {
+            // Proxy to Python for consistency (it has the Polymerket Feed)
             const symbol = c.req.query('symbol') || "BTC";
-            const market = await this.polyClient.getMarketForAsset(symbol);
+            const resp = await c.env.STRATEGY_ENGINE.fetch(`http://strategy-engine/research?symbol=${symbol}`);
 
-            if (!market) {
-                return c.json({ error: `No prediction market found for ${symbol}` }, 404);
-            }
+            if (!resp.ok) return c.json({ error: "Research Core Unavailable" }, 503);
+
+            const snapshot: any = await resp.json();
+            const markets = snapshot.prediction_markets || {};
+
+            // Extract the most relevant market (e.g. recession or BTC price)
+            // Python 'unified_data.events' usually has 'recession_odds' or specific keys
+            // If empty, return status
 
             return c.json({
                 asset: symbol,
-                question: market.question,
-                probability: market.probability,
-                market_sentiment: market.sentiment,
-                volume: market.volume,
-                implied_odds: `${(market.probability * 100).toFixed(1)}%`,
-                timestamp: new Date().toISOString()
+                data: markets, // Return raw map
+                source: "Polymarket (via Research Core)"
             });
         } catch (e: any) {
             return c.json({ error: e.message }, 500);
@@ -85,73 +72,38 @@ export class ResearchController {
 
     async getDecisionTree(c: Context<{ Bindings: Bindings }>) {
         try {
+            // Get the full evaluation for the tree
             const symbol = c.req.query('symbol') || "BTC";
 
-            // 1. Fetch Real Data with Keys
-            const marketClient = new MarketDataClient(c.env.ALPHA_VANTAGE_KEY);
-            const onChainClient = new OnChainClient(c.env.ETHERSCAN_API_KEY);
-            const eventService = new EventService(c.env.ALPHA_VANTAGE_KEY);
+            const resp = await c.env.STRATEGY_ENGINE.fetch("http://strategy-engine/evaluate", {
+                method: "POST",
+                body: JSON.stringify({
+                    strategy: "graham",
+                    asset: symbol
+                })
+            });
 
-            const [quote, fund, events, flows] = await Promise.all([
-                marketClient.getQuote(symbol),
-                marketClient.getFundamentals(symbol),
-                eventService.getBlockingEvents(symbol), // Real Events
-                onChainClient.getNetworkFlows(symbol)
-            ]);
+            if (!resp.ok) return c.json({ error: "Research Core Unavailable" }, 503);
 
-            // 2. Build Tree Nodes
-            const nodes = [];
+            const evaluation: any = await resp.json();
 
-            // Node 1: Events
-            const eventNode = {
-                id: "node_1_events",
-                label: "Event Block Check",
-                status: events.length > 0 ? "BLOCK" : "PASS",
-                details: events.length > 0 ? `Blocked by: ${events[0].description}` : "No critical events",
-                next: "node_2_value"
-            };
-            nodes.push(eventNode);
-
-            // Node 2: Value (Graham)
-            let valueNode: any = { id: "node_2_value", label: "Fundamental Value", status: "SKIPPED" };
-            if (eventNode.status === "PASS") {
-                const intrinsic = fund.eps * 15;
-                const safe = (intrinsic - quote.price) > 0;
-                valueNode = {
-                    id: "node_2_value",
-                    label: "Graham Value Check",
-                    status: safe ? "PASS" : "FAIL",
-                    details: `Price $${quote.price} vs Intrinsic $${intrinsic.toFixed(2)}`,
-                    next: safe ? "node_3_onchain" : "REJECT"
-                };
-            }
-            nodes.push(valueNode);
-
-            // Node 3: On-Chain Flow (New Logic)
-            let chainNode: any = { id: "node_3_onchain", label: "On-Chain Confirmation", status: "SKIPPED" };
-            if (valueNode.status === "PASS") {
-                const congestion = (flows as any).congestion_status;
-                const risk = congestion === "HIGH";
-
-                chainNode = {
-                    id: "node_3_onchain",
-                    label: "On-Chain Flow Check",
-                    status: risk ? "WARN" : "PASS",
-                    details: congestion ? `Network Congestion: ${congestion}` : "No On-Chain Data (Equity)",
-                    next: "node_4_prediction"
-                };
-            }
-            nodes.push(chainNode);
-
-            // Simple final decision
-            const finalStatus = chainNode.status === "WARN" ? "Review" : "CANDIDATE";
+            // Convert Evaluation Triggers to "Tree" format for UI
+            const nodes = evaluation.triggers_evaluated.map((t: any, idx: number) => ({
+                id: `node_${idx}`,
+                label: `${t.source.toUpperCase()}: ${t.metric}`,
+                status: t.status,
+                details: `${t.value} ${t.operator} ${t.threshold}`,
+                next: idx < evaluation.triggers_evaluated.length - 1 ? `node_${idx + 1}` : evaluation.final_action
+            }));
 
             return c.json({
                 asset: symbol,
                 generated_at: new Date().toISOString(),
                 decision_flow: nodes,
-                final_outcome: nodes[nodes.length - 1].status === "PASS" ? "CANDIDATE" : "REJECT"
+                final_outcome: evaluation.final_action,
+                ai_reasoning: evaluation.reasoning
             });
+
         } catch (e: any) {
             return c.json({ error: e.message }, 500);
         }

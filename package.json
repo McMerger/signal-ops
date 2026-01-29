@@ -1,4 +1,12 @@
 {
+  "name": "signal-ops-root",
+  "private": true,
+  "scripts": {
+    "dev": "docker compose up",
+    "stop": "docker compose down",
+    "clean": "docker compose down -v",
+    "test": "echo 'Run tests in specific service folders'"
+  },
   "devDependencies": {
     "baseline-browser-mapping": "^2.8.32"
   }

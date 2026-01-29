@@ -150,13 +150,13 @@ SignalOps uses a Cloudflare-native architecture, designed to be multi-asset from
 
 ### Service Topology
 
-| Service         | Language        | Hosted On           | Role                                                   | Status       |
-|----------------|-----------------|---------------------|--------------------------------------------------------|-------------|
-| Frontend       | TypeScript      | Cloudflare Pages    | Beginner-to-pro UI, dashboard, visualization, auth     | Live        |
-| Execution Core | TypeScript      | Cloudflare Workers  | API, risk, multi-asset portfolio and order management  | Live        |
-| Strategy Engine| Python          | Cloudflare Workers  | Deterministic strategy logic, backtest parity          | In progress |
-| Signal Engine  | C++ (Wasm)      | Cloudflare Workers  | Compute-intensive signal processing                    | In progress |
-| Research Core  | Kimi K2.5       | External / managed  | Long-context research, orchestration, policy           | Initial     |
+| Service         | Language        | Hosted On           | Role                                                   | Status      |
+|-----------------|-----------------|---------------------|--------------------------------------------------------|-------------|
+| Frontend        | TypeScript      | Cloudflare Pages    | Beginner-to-pro UI, dashboard, visualization, auth     | Live        |
+| Execution Core  | TypeScript      | Cloudflare Workers  | API, risk, multi-asset portfolio and order management  | Live        |
+| Strategy Engine | Python          | Cloudflare Workers  | Deterministic strategy logic, backtest parity          | In progress |
+| Signal Engine   | C++ (Wasm)      | Cloudflare Workers  | Compute-intensive signal processing                    | In progress |
+| Research Core   | Kimi K2.5       | External / managed  | Long-context research, orchestration, policy           | Initial     |
 
 ***
 
@@ -320,4 +320,3 @@ cd python-strategy-engine
 - Multi-tenant SaaS mode (segmented schemas)  
 - Additional reference strategies and datasets across asset classes  
 - Deeper AI support for explanations, scenario analysis, and human-in-the-loop reviewi will emphasize this again and even further: "update the backend according to updated readme"
-

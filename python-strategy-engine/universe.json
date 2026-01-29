@@ -1,0 +1,39 @@
+{
+    "universe": [
+        {
+            "symbol": "SPY",
+            "asset_class": "equity",
+            "name": "SPDR S&P 500 ETF Trust",
+            "active": true
+        },
+        {
+            "symbol": "BTC",
+            "asset_class": "crypto",
+            "name": "Bitcoin",
+            "active": true
+        },
+        {
+            "symbol": "ETH",
+            "asset_class": "crypto",
+            "name": "Ethereum",
+            "active": true
+        },
+        {
+            "symbol": "NVDA",
+            "asset_class": "equity",
+            "name": "NVIDIA Corporation",
+            "active": true
+        }
+    ],
+    "filters": {
+        "min_market_cap": 1000000000,
+        "min_volume": 1000000,
+        "forbidden_sectors": [
+            "gambling_legacy"
+        ]
+    },
+    "strategy_defaults": {
+        "max_position_size": 0.05,
+        "rebalance_interval": "daily"
+    }
+}

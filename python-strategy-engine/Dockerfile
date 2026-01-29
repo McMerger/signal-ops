@@ -1,35 +1,19 @@
-# syntax=docker/dockerfile:1.4
-FROM python:3.11-slim
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Install system dependencies in a single layer
-RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    postgresql-client \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Install dependencies if package.json exists, otherwise just setup for npx
+COPY requirements.txt .
+# Python/Pip setup? Cloudflare Workers don't run local Python unless using miniflare's storage?
+# Actually, standard wrangler dev for Python workers uses a local runtime.
+# But we need python3 installed in the container?
+RUN apk add --no-cache python3 py3-pip
 
-# Copy requirements first for better layer caching
-COPY python-strategy-engine/requirements.txt /app/
+# Copy source
+COPY . .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Expose port
+EXPOSE 8788
 
-# Copy application code
-COPY python-strategy-engine/ /app/
-
-# Create logs directory
-RUN mkdir -p /app/logs
-
-# Expose gRPC and REST ports
-EXPOSE 50051 5000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import sys; sys.exit(0)"
-
-# Default command - runs gRPC server for strategy evaluation
-CMD ["python", "grpc_server.py"]
-
+# Run Wrangler
+CMD ["npx", "wrangler", "dev", "--host", "0.0.0.0", "--port", "8788"]

@@ -26,8 +26,8 @@ import { MarketDataClient } from '../clients/MarketDataClient';
 export class PaperBroker implements IBroker {
     private marketClient: MarketDataClient;
 
-    constructor() {
-        this.marketClient = new MarketDataClient();
+    constructor(apiKey?: string) {
+        this.marketClient = new MarketDataClient(apiKey);
     }
 
     async placeOrder(order: OrderRequest): Promise<ExecutionResult> {
@@ -45,7 +45,7 @@ export class PaperBroker implements IBroker {
         return {
             orderId: crypto.randomUUID(),
             status: 'FILLED',
-            filledPrice: executedPrice,
+            filledPrice: executedPrice!,
             filledQuantity: order.quantity,
             timestamp: new Date().toISOString(),
             brokerOrderId: `PAPER-${crypto.randomUUID().split('-')[0]}`,
@@ -59,10 +59,10 @@ export class PaperBroker implements IBroker {
 }
 
 export class BrokerFactory {
-    static getBroker(env: string): IBroker {
+    static getBroker(env: string, apiKey?: string): IBroker {
         if (env === 'LIVE') {
             throw new Error("Live broker not yet configured. Use PAPER mode.");
         }
-        return new PaperBroker();
+        return new PaperBroker(apiKey);
     }
 }

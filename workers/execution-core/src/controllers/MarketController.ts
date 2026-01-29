@@ -20,8 +20,11 @@ export class MarketController {
                 return c.json({ error: 'Symbol query parameter required' }, 400);
             }
 
-            const quote = await this.marketClient.getQuote(symbol);
-            const fundamentals = await this.marketClient.getFundamentals(symbol);
+            // Inject API Key from Env
+            const client = new MarketDataClient(c.env.ALPHA_VANTAGE_KEY);
+
+            const quote = await client.getQuote(symbol);
+            const fundamentals = await client.getFundamentals(symbol);
 
             return c.json({
                 ...quote,

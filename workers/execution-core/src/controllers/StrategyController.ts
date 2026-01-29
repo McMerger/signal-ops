@@ -183,7 +183,7 @@ export class StrategyController {
             }
 
             // 2. Broker Execution (New: Live Trading Path)
-            const broker = BrokerFactory.getBroker("PAPER");
+            const broker = BrokerFactory.getBroker("PAPER", c.env.ALPHA_VANTAGE_KEY);
             const execution = await broker.placeOrder({
                 symbol: asset,
                 side,

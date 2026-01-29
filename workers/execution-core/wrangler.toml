@@ -9,7 +9,8 @@ id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" # Placeholder
 [[d1_databases]]
 binding = "SIGNAL_DB"
 database_name = "signal-db"
-database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" # Placeholder
+database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+migrations_dir = "migrations"
 
 # [[wasm_modules]]
 # binding = "SIGNAL_CORE"

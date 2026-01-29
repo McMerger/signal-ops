@@ -136,6 +136,30 @@ class YahooFinanceAdapter:
             print(f"Failed to fetch fundamentals for {symbol}: {e}")
             return None
 
+    def get_history(self, symbol: str, interval: str = '1d', range: str = '1mo') -> List[float]:
+        """
+        Get historical closing prices for TA.
+        """
+        try:
+            url = f"{self.base_url}/v8/finance/chart/{symbol}"
+            params = {'interval': interval, 'range': range}
+            resp = self.session.get(url, params=params, timeout=10)
+            
+            if not resp.ok: return []
+            
+            data = resp.json()
+            result = data.get('chart', {}).get('result', [])
+            if not result: return []
+            
+            quote = result[0].get('indicators', {}).get('quote', [{}])[0]
+            closes = quote.get('close', [])
+            
+            # Filter out Nones
+            return [float(c) for c in closes if c is not None]
+        except Exception as e:
+            print(f"Failed to fetch history for {symbol}: {e}")
+            return []
+
     def _calculate_ncav(self, balance_sheet: Dict, key_stats: Dict) -> Dict:
         """
         Calculate Net Current Asset Value (Graham's Net-Net).
@@ -305,11 +329,18 @@ class FundamentalDataFeed:
         # Use BTC as default if unknown
         base = proxies.get(symbol, proxies['BTC'])
         
-        # We need current price to calculate live ratios (P/E, P/B)
-        # Using a fixed reference price for ratio stability in this feed adapter
-        # In a real engine, we'd pass current price in.
-        ref_prices = {'BTC': 65000, 'ETH': 3400, 'SOL': 145}
-        price = ref_prices.get(symbol, 65000)
+        # Fetch real live price via Yahoo
+        # Yahoo supports BTC-USD, ETH-USD, SOL-USD
+        yahoo_symbol = f"{symbol}-USD" if not symbol.endswith("-USD") else symbol
+        
+        # Try to get live price from history (last close is fast)
+        history = self.yahoo.get_history(yahoo_symbol, range='1d', interval='1d')
+        price = history[-1] if history else 0
+        
+        if price == 0:
+             # Fallback only if network fails -- strictly better than hardcoded old price
+             # But to be safe and avoid div-by-zero, we check.
+             price = 100000 if symbol == 'BTC' else 3000
 
         pe = price / (base['eps'] * (2500 if symbol == 'BTC' else 12)) # Scaling to match TS logic roughly
         

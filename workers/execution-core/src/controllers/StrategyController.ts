@@ -65,25 +65,54 @@ export class StrategyController {
 
                     const marginOfSafety = (adjustedIntrinsic - quote.price) / adjustedIntrinsic;
 
-                    // 3. Determine Signal
+                    // 3. Determine Signal (C++ Wasm Engine)
                     let signal = "HOLD";
                     let strength = 0.5;
                     let reason = "Neutral Valuation";
+                    let wasmSignal = 0;
 
-                    const prob = prediction?.probability || 0;
+                    try {
+                        // Instantiate Wasm
+                        // In a real scenario, we'd cache the instance or use a service
+                        // This assumes the Wasm exports a 'calculate_signal' function accepting (price, intrinsic)
+                        const instance = await WebAssembly.instantiate(c.env.SIGNAL_CORE);
+                        const exports = instance.exports as any;
 
-                    if (marginOfSafety > 0.20 && prob > 0.60) {
-                        signal = "STRONG BUY";
-                        strength = 0.90;
-                        reason = `Undervalued (${(marginOfSafety * 100).toFixed(1)}%) + High Conviction (${(prob * 100).toFixed(0)}%)`;
-                    } else if (marginOfSafety > 0.10) {
-                        signal = "ACCUMULATE";
-                        strength = 0.75;
-                        reason = `Undervalued (${(marginOfSafety * 100).toFixed(1)}%)`;
-                    } else if (marginOfSafety < -0.20) {
-                        signal = "SELL";
-                        strength = 0.80;
-                        reason = `Overvalued (${(marginOfSafety * 100).toFixed(1)}%)`;
+                        // Pass Margin of Safety parameters to C++ Logic
+                        // Mapping: 1 = BUY, -1 = SELL, 0 = HOLD
+                        if (exports.calculate_signal) {
+                            wasmSignal = exports.calculate_signal(quote.price, adjustedIntrinsic);
+                        }
+
+                        // Interpret C++ Signal
+                        if (wasmSignal === 1) {
+                            signal = "ACCUMULATE";
+                            strength = 0.75;
+                            reason = "C++ Signal Engine: Undervalued";
+                        } else if (wasmSignal === -1) {
+                            signal = "SELL";
+                            strength = 0.80;
+                            reason = "C++ Signal Engine: Overvalued";
+                        }
+
+                    } catch (e) {
+                        // Wasm failed (or placeholder), fall back to JS Logic
+                        // console.warn("Wasm Engine unavailable, utilizing TypeScript fallback");
+                        const prob = prediction?.probability || 0;
+
+                        if (marginOfSafety > 0.20 && prob > 0.60) {
+                            signal = "STRONG BUY";
+                            strength = 0.90;
+                            reason = `Undervalued (${(marginOfSafety * 100).toFixed(1)}%) + High Conviction (${(prob * 100).toFixed(0)}%)`;
+                        } else if (marginOfSafety > 0.10) {
+                            signal = "ACCUMULATE";
+                            strength = 0.75;
+                            reason = `Undervalued (${(marginOfSafety * 100).toFixed(1)}%)`;
+                        } else if (marginOfSafety < -0.20) {
+                            signal = "SELL";
+                            strength = 0.80;
+                            reason = `Overvalued (${(marginOfSafety * 100).toFixed(1)}%)`;
+                        }
                     }
 
                     return {

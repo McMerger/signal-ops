@@ -10,3 +10,7 @@ id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" # Placeholder
 binding = "SIGNAL_DB"
 database_name = "signal-db"
 database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" # Placeholder
+
+[[wasm_modules]]
+binding = "SIGNAL_CORE"
+filename = "./bin/signal_core.wasm"

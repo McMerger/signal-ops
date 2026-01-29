@@ -54,3 +54,28 @@ install(DIRECTORY include/ DESTINATION include)
 # Enable testing
 enable_testing()
 add_subdirectory(tests EXCLUDE_FROM_ALL)
+
+# ==========================================
+# Wasm / Emscripten Build Target
+# ==========================================
+if(EMSCRIPTEN)
+    add_executable(signal_core_wasm 
+        src/wasm_entry.cpp
+        src/indicators.cpp
+        src/order_book.cpp
+    )
+
+    # Compile options for Wasm
+    target_compile_options(signal_core_wasm PRIVATE -O3 -msimd128)
+    
+    # Link options (Modularize for JS consumption)
+    target_link_options(signal_core_wasm PRIVATE
+        -s "EXPORTED_RUNTIME_METHODS=['ccall','cwrap']"
+        -s "MODULARIZE=1"
+        -s "EXPORT_NAME='SignalCore'"
+        -s "ALLOW_MEMORY_GROWTH=1"
+        --bind
+    )
+    
+    target_link_libraries(signal_core_wasm PRIVATE signalops_core)
+endif()

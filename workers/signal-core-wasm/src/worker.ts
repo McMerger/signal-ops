@@ -30,19 +30,46 @@ export default {
     async fetch(request: Request, env: any, ctx: any): Promise<Response> {
         const core = await getSignalCore();
 
-        // Example: Call a C++ function exposed via cwrap/ccall
-        // Assuming C++ has: int calculate_signal(int market_id)
-        // const result = core.ccall('calculate_signal', 'number', ['number'], [101]);
+        if (url.pathname === '/signals') {
+            if (request.method !== 'POST') return new Response("Method not allowed", { status: 405 });
 
-        const url = new URL(request.url);
+            try {
+                const body = await request.json() as { prices: number[] };
+                if (!body.prices || !Array.isArray(body.prices)) {
+                    return new Response("Invalid body", { status: 400 });
+                }
 
-        if (url.pathname === '/process') {
-            const result = "Simulation: C++ Core Processed Signal"; // Replace with actual call
-            return new Response(JSON.stringify({ signal: result }), {
-                headers: { 'Content-Type': 'application/json' }
-            });
+                // Bridge to C++ Wasm
+                // 1. Create C++ Vector
+                const vec = new core.VectorDouble();
+                for (const p of body.prices) {
+                    vec.push_back(p);
+                }
+
+                // 2. Call SIMD-optimized function
+                const metrics = core.calculate_all_metrics(vec);
+
+                // 3. Clean up C++ memory
+                vec.delete();
+
+                // 4. Return result
+                return new Response(JSON.stringify({
+                    rsi: metrics.rsi,
+                    macd: metrics.macd,
+                    bb: {
+                        upper: metrics.bb_upper,
+                        lower: metrics.bb_lower
+                    },
+                    source: "C++ (Wasm) + SIMD"
+                }), {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+            } catch (e: any) {
+                return new Response("Wasm Execution Error: " + e.message, { status: 500 });
+            }
         }
 
-        return new Response("Signal Core Wasm Worker Ready");
+        return new Response("Signal Core Wasm Worker Ready (Endpoints: POST /signals)");
     }
 };

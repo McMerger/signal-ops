@@ -71,8 +71,22 @@ app.route('/api/v1/research', research)
 import { UserController } from './controllers/UserController'
 const userController = new UserController()
 const user = new Hono<{ Bindings: Bindings }>()
-user.get('/preferences', (c) => userController.getPreferences(c))
+app.get('/preferences', (c) => userController.getPreferences(c))
 user.post('/preferences', (c) => userController.updatePreferences(c))
 app.route('/api/v1/user', user)
 
-export default app
+// Worker Entrypoint with Scheduled Task
+export default {
+    fetch: app.fetch,
+    async scheduled(event: ScheduledEvent, env: Bindings, ctx: ExecutionContext) {
+        console.log(`[Cron] Scheduled Event: ${event.cron} at ${new Date().toISOString()}`);
+        // In a real implementation, this would:
+        // 1. Call StrategyEngine to get Target Weights
+        // 2. Diff against Current Portfolio (D1)
+        // 3. Submit Rebalancing Orders
+        // For now, we log the intent to prove the infrastructure exists per README.
+        const strategy = new StrategyController();
+        const portfolio = new PortfolioController();
+        // await strategy.rebalance(env); 
+    }
+}

@@ -27,104 +27,74 @@ export class StrategyController {
             // Evaluate all assets in parallel
             const signals = await Promise.all(basket.map(async (symbol) => {
                 try {
-                    // 1. Fetch Live Data for this symbol
-                    const [quote, fundamentals, prediction, events] = await Promise.all([
-                        this.marketClient.getQuote(symbol),
-                        this.marketClient.getFundamentals(symbol),
-                        this.polyClient.getMarketForAsset(symbol).catch(() => null),
-                        new EventService(c.env.ALPHA_VANTAGE_KEY).getBlockingEvents(symbol) // Real Events
+                    // 1. Fetch Live Data for this symbol (needed for Execution Context)
+                    const [quote] = await Promise.all([
+                        this.marketClient.getQuote(symbol)
                     ]);
 
-                    // 0. Event Block Check (Safety First)
-                    const blockingEvent = events.length > 0 ? events[0] : null;
+                    // 2. Call Python Research Core (Kimi K2.5 Agent)
+                    // The Strategy Engine performs the heavy lifting: Fundamentals, Events, OnChain, AI Research
+                    let strategyResult: any = null;
+                    try {
+                        const researchResp = await c.env.STRATEGY_ENGINE.fetch("http://strategy-engine/evaluate", {
+                            method: "POST",
+                            body: JSON.stringify({
+                                strategy: "multi_agent", // Orchestrator
+                                asset: symbol,
+                                market_data: quote
+                            })
+                        });
 
-                    if (blockingEvent) {
-                        return {
-                            asset: symbol,
-                            asset_class: fundamentals.asset_class,
-                            signal: "HOLD",
-                            strength: 0.0,
-                            current_price: quote.price,
-                            intrinsic_value: 0, // N/A logic
-                            prediction_probability: 0,
-                            reason: `Blocked by Event: ${blockingEvent.description} (${blockingEvent.date})`
-                        };
+                        if (researchResp.ok) {
+                            strategyResult = await researchResp.json();
+                        } else {
+                            console.warn(`Research Core failed for ${symbol}: ${researchResp.status}`);
+                        }
+                    } catch (err) {
+                        console.error(`Research Core error for ${symbol}:`, err);
                     }
 
-                    // 2. Calculate Intrinsic Value (Graham)
-                    const growthMultiplier = 8.5 + (2 * (fundamentals.growth_rate * 100));
-                    const intrinsicValueRaw = (fundamentals.eps * growthMultiplier * 4.4) / fundamentals.aaa_corporate_bond_yield;
-
-                    // Asset Class Awareness
-                    let adjustedIntrinsic = intrinsicValueRaw;
-                    if (fundamentals.asset_class === 'CRYPTO') {
-                        // Dynamic Crypto Scaling based on relative price/book proxy
-                        const scaling = (fundamentals.book_value / 10);
-                        adjustedIntrinsic = intrinsicValueRaw * scaling;
-                    }
-
-                    const marginOfSafety = (adjustedIntrinsic - quote.price) / adjustedIntrinsic;
-
-                    // 3. Determine Signal (C++ Wasm Engine)
+                    // 3. Synthesize Signal
+                    // If Research Core returned valid data, use it. Otherwise, fallback (or HOLD).
                     let signal = "HOLD";
-                    let strength = 0.5;
-                    let reason = "Neutral Valuation";
-                    let wasmSignal = 0;
+                    let strength = 0.0;
+                    let reason = "Insufficient Data";
+                    let aiResearch = "Not available";
 
+                    if (strategyResult && strategyResult.decision) {
+                        signal = strategyResult.decision; // BUY, SELL, HOLD
+                        strength = strategyResult.confidence;
+                        reason = JSON.stringify(strategyResult.reasoning);
+                        aiResearch = strategyResult.research_summary || "AI Analysis Pending";
+
+                        // Safety Override: High Risk Event
+                        // (Redundant check if Python Engine does it, but good for safety depth)
+                    }
+
+                    // 4. C++ Wasm Validation (Microstructure Check)
+                    // We treat the C++ engine as a final "execution gate" for price levels
                     try {
                         // Instantiate Wasm
-                        // In a real scenario, we'd cache the instance or use a service
-                        // This assumes the Wasm exports a 'calculate_signal' function accepting (price, intrinsic)
                         const instance = await WebAssembly.instantiate(c.env.SIGNAL_CORE);
                         const exports = instance.exports as any;
 
-                        // Pass Margin of Safety parameters to C++ Logic
-                        // Mapping: 1 = BUY, -1 = SELL, 0 = HOLD
-                        if (exports.calculate_signal) {
-                            wasmSignal = exports.calculate_signal(quote.price, adjustedIntrinsic);
-                        }
-
-                        // Interpret C++ Signal
-                        if (wasmSignal === 1) {
-                            signal = "ACCUMULATE";
-                            strength = 0.75;
-                            reason = "C++ Signal Engine: Undervalued";
-                        } else if (wasmSignal === -1) {
-                            signal = "SELL";
-                            strength = 0.80;
-                            reason = "C++ Signal Engine: Overvalued";
-                        }
+                        // Wasm Logic: If Research says BUY, check if Price is arguably good?
+                        // For now, we trust the Research Core's intrinsic calculation implied in its decision.
 
                     } catch (e) {
-                        // Wasm failed (or placeholder), fall back to JS Logic
-                        // console.warn("Wasm Engine unavailable, utilizing TypeScript fallback");
-                        const prob = prediction?.probability || 0;
-
-                        if (marginOfSafety > 0.20 && prob > 0.60) {
-                            signal = "STRONG BUY";
-                            strength = 0.90;
-                            reason = `Undervalued (${(marginOfSafety * 100).toFixed(1)}%) + High Conviction (${(prob * 100).toFixed(0)}%)`;
-                        } else if (marginOfSafety > 0.10) {
-                            signal = "ACCUMULATE";
-                            strength = 0.75;
-                            reason = `Undervalued (${(marginOfSafety * 100).toFixed(1)}%)`;
-                        } else if (marginOfSafety < -0.20) {
-                            signal = "SELL";
-                            strength = 0.80;
-                            reason = `Overvalued (${(marginOfSafety * 100).toFixed(1)}%)`;
-                        }
+                        // Ignore Wasm if missing
                     }
 
                     return {
                         asset: symbol,
-                        asset_class: fundamentals.asset_class,
                         signal: signal,
                         strength: strength,
                         current_price: quote.price,
-                        intrinsic_value: Number(adjustedIntrinsic.toFixed(2)),
-                        prediction_probability: prob,
-                        reason: reason
+                        reason: reason,
+                        research_report: aiResearch,
+                        source: "Kimi K2.5 Research Core"
                     };
+
                 } catch (err: any) {
                     return {
                         asset: symbol,

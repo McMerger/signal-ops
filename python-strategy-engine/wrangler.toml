@@ -3,5 +3,5 @@ main = "worker.py"
 compatibility_date = "2024-03-12"
 compatibility_flags = ["python_workers"]
 
-# [vars]
-# API_KEY = "value"
+[vars]
+MOONSHOT_API_KEY = "placeholder-key" # Kimi K2.5 Integration

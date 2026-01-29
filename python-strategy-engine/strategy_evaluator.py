@@ -3,9 +3,11 @@ Production-ready strategy evaluator for SignalOps.
 Integrates multiple agents and provides unified decision-making interface.
 """
 import logging
+import os
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
+from openai import OpenAI  # Kimi is OpenAI-compatible
 
 from agents.base_agent import BaseAgent
 from agents.graham_defensive import GrahamDefensiveStrategy
@@ -43,17 +45,33 @@ class StrategyEvaluation:
     reasoning: Dict[str, str]
     final_action: str  # APPROVED, BLOCKED, PENDING
     timestamp: int
+    research_summary: Optional[str] = None # Added for Kimi output
 
 
 class StrategyEvaluator:
     """
     Unified strategy evaluation engine.
-    Coordinates multiple agents and applies multi-source rules.
+    Coordinates multiple agents and applies Kimi K2.5 research layer.
     """
     
-    def __init__(self, use_mock: bool = False):
-        """Initialize evaluator with data feed and agents"""
+    def __init__(self, use_mock: bool = False, api_key: Optional[str] = None):
+        """Initialize evaluator with data feed and Research LLM"""
         self.feed = MultiSourceDataFeed(use_mock=use_mock)
+        
+        # Initialize Kimi Client (Moonshot AI)
+        self.kimi_client = None
+        key = api_key or os.getenv("MOONSHOT_API_KEY")
+        if key:
+            try:
+                self.kimi_client = OpenAI(
+                    api_key=key,
+                    base_url="https://api.moonshot.cn/v1"
+                )
+                logger.info("Kimi K2.5 Research Core initialized.")
+            except Exception as e:
+                logger.error(f"Failed to init Kimi client: {e}")
+        else:
+            logger.warning("MOONSHOT_API_KEY not found. Research Core disabled.")
         
         # Initialize agents
         self.agents: Dict[str, BaseAgent] = {
@@ -134,14 +152,45 @@ class StrategyEvaluator:
         # Convert signal to evaluation
         triggers = self._extract_triggers_from_signal(signal, unified_data)
         
+        # Kimi K2.5 Research Layer
+        research_summary = None
+        if self.kimi_client and signal.confidence > 0.6:
+            # Only burn tokens on high-conviction signals
+            research_summary = self._generate_kimi_research(
+                asset, signal.action, unified_data
+            )
+        
         return StrategyEvaluation(
             decision=Decision(signal.action),
             confidence=signal.confidence,
             triggers_evaluated=triggers,
             reasoning=signal.metadata.get('reasoning', {}),
             final_action='APPROVED' if signal.confidence > 0.7 else 'PENDING',
-            timestamp=int(signal.timestamp)
+            timestamp=int(signal.timestamp),
+            research_summary=research_summary
         )
+
+    def _generate_kimi_research(self, asset: str, decision: str, data: Dict) -> str:
+        """Call Kimi K2.5 to generate a research summary."""
+        try:
+            # Construct a data-dense prompt
+            context = f"Asset: {asset}\nDecision: {decision}\n"
+            context += f"Fundamentals: {data.get('fundamentals', {})}\n"
+            context += f"Prediction Markets: {data.get('events', {})}\n"
+            context += f"On-Chain: {data.get('onchain', {})}\n"
+            
+            completion = self.kimi_client.chat.completions.create(
+                model="moonshot-v1-8k",
+                messages=[
+                    {"role": "system", "content": "You are a specialized financial analyst. Summarize the provided data points into a concise 2-sentence rationale for the trade decision."},
+                    {"role": "user", "content": context}
+                ],
+                temperature=0.3
+            )
+            return completion.choices[0].message.content
+        except Exception as e:
+            logger.error(f"Kimi research failed: {e}")
+            return "Research unavailable"
     
     def _evaluate_multi_agent(
         self,
@@ -248,9 +297,9 @@ class StrategyEvaluator:
 _evaluator_instance: Optional[StrategyEvaluator] = None
 
 
-def get_evaluator(use_mock: bool = False) -> StrategyEvaluator:
+def get_evaluator(use_mock: bool = False, api_key: Optional[str] = None) -> StrategyEvaluator:
     """Get or create singleton evaluator instance"""
     global _evaluator_instance
     if _evaluator_instance is None:
-        _evaluator_instance = StrategyEvaluator(use_mock=use_mock)
+        _evaluator_instance = StrategyEvaluator(use_mock=use_mock, api_key=api_key)
     return _evaluator_instance

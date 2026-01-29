@@ -11,7 +11,9 @@ async def on_fetch(request, env):
     method = request.method
     
     # Initialize evaluator (singleton)
-    evaluator = get_evaluator(use_mock=False) # Strict Real Data Only per README
+    # Inject Kimi API Key from env
+    api_key = env.MOONSHOT_API_KEY if hasattr(env, 'MOONSHOT_API_KEY') else None
+    evaluator = get_evaluator(use_mock=False, api_key=api_key) # Strict Real Data Only per README
 
     if method == "GET" and url.endswith("/evaluate"):
         # Default Graham evaluation

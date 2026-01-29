@@ -14,3 +14,7 @@ database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" # Placeholder
 [[wasm_modules]]
 binding = "SIGNAL_CORE"
 filename = "./bin/signal_core.wasm"
+
+[[services]]
+binding = "STRATEGY_ENGINE"
+service = "strategy-engine"

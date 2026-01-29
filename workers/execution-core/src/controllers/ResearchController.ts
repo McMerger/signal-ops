@@ -20,23 +20,47 @@ export class ResearchController {
     async getPredictionMarket(c: Context) {
         return c.json({
             category: 'Crypto',
+            market_question: "Will Bitcoin hit $100k by Q4 2025?",
             implied_probability: 0.65,
+            volume_24h: 1250000,
             market_sentiment: 'Optimistic',
             sources: ['Polymarket', 'Kalshi'],
+            probability_curve: [
+                { timestamp: "2024-10-01", prob: 0.45 },
+                { timestamp: "2024-11-01", prob: 0.55 },
+                { timestamp: "2024-12-01", prob: 0.60 },
+                { timestamp: "2025-01-01", prob: 0.65 }
+            ],
             adjustment_factor: 0.95 // Bias correction
         })
     }
 
     async getDecisionTree(c: Context) {
         return c.json({
+            asset: 'BTC',
+            timestamp: new Date().toISOString(),
             root: {
-                node: 'Is Price < Intrinsic Value?',
+                id: '1',
+                node_type: 'CONDITION',
+                label: 'Price < Intrinsic Value?',
+                data: { current: 68000, intrinsic: 52000 },
                 result: false,
                 children: [
                     {
-                        node: 'Check Momentum / Flows',
-                        result: 'Strong Inflow',
-                        action: 'HOLD (Speculative Overlay)'
+                        id: '2',
+                        node_type: 'CONDITION',
+                        label: 'Check Momentum / Flows',
+                        data: { flow_score: 0.85, trend: 'UP' },
+                        result: true,
+                        children: [
+                            {
+                                id: '3',
+                                node_type: 'ACTION',
+                                label: 'HOLD (Speculative Overlay)',
+                                action: 'HOLD',
+                                reason: 'Overvalued but strong momentum support'
+                            }
+                        ]
                     }
                 ]
             }

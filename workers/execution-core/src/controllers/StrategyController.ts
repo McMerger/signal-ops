@@ -2,6 +2,7 @@ import { Context } from 'hono';
 import { Bindings } from '../bindings';
 import { MarketDataClient } from '../clients/MarketDataClient';
 import { PolymarketClient } from '../clients/PolymarketClient';
+import { RiskService } from '../services/RiskService';
 
 export class StrategyController {
     private marketClient: MarketDataClient;
@@ -111,20 +112,77 @@ export class StrategyController {
 
     /**
      * POST /api/v1/strategy/orders
-     * Submit strategy-generated orders for execution
+     * Submit strategy-generated orders for execution with Risk Check and Persistence.
      */
     async submitOrder(c: Context<{ Bindings: Bindings }>) {
         try {
             const body = await c.req.json();
+            const { asset, side, quantity, price, strategy_name } = body;
+
+            if (!asset || !side || !quantity || !price) {
+                return c.json({ error: "Missing required order fields: asset, side, quantity, price" }, 400);
+            }
+
+            // 1. Risk Check (Live)
+            const riskService = new RiskService(); // In real app, inject this
+            const riskCheck = await riskService.checkPositionLimit(
+                {
+                    accountId: "DEFAULT_ACCOUNT", // Single user logic for now
+                    asset,
+                    side,
+                    quantity,
+                    price
+                },
+                async (accountId: string, assetSymbol: string) => {
+                    // Helper to get current exposure from DB
+                    const pos = await c.env.SIGNAL_DB.prepare(
+                        "SELECT quantity, current_price FROM positions WHERE symbol = ?"
+                    ).bind(assetSymbol).first();
+
+                    if (!pos) return 0;
+                    return Math.abs((pos.quantity as number) * (pos.current_price as number));
+                }
+            );
+
+            if (!riskCheck.approved) {
+                return c.json({
+                    status: "REJECTED_RISK",
+                    reason: riskCheck.reason,
+                    risk_data: riskCheck
+                }, 400);
+            }
+
+            // 2. Persist Order to D1
+            const orderId = crypto.randomUUID();
+            const now = new Date().toISOString();
+
+            await c.env.SIGNAL_DB.prepare(`
+                INSERT INTO orders (id, strategy_name, symbol, side, quantity, price, status, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, ?)
+            `).bind(
+                orderId,
+                strategy_name || "MANUAL",
+                asset,
+                side,
+                quantity,
+                price,
+                now,
+                now
+            ).run();
+
+            // 3. Return Success
             return c.json({
                 status: "ACCEPTED",
-                order_id: crypto.randomUUID(),
-                received_at: new Date().toISOString(),
+                order_id: orderId,
+                received_at: now,
                 payload: body,
-                risk_check: "PASSED (Live Limits Check Pending)"
+                risk_check: "PASSED",
+                risk_data: riskCheck
             }, 201);
+
         } catch (e: any) {
-            return c.json({ error: "Invalid request body" }, 400);
+            console.error("Order submission failed:", e); // Log internal error
+            return c.json({ error: "Order processing failed: " + e.message }, 500);
         }
     }
 }

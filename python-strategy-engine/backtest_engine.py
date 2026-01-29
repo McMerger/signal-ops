@@ -61,6 +61,41 @@ class BacktestEngine:
         self.evaluator = StrategyEvaluator(use_mock=False)  # Strict Real Data
         logger.info(f"Backtest engine initialized with ${initial_capital:,.2f}")
     
+    def _fetch_real_historical_data(
+        self,
+        symbol: str,
+        start_date: str,
+        end_date: str
+    ) -> List[Dict]:
+        """Fetch real historical data from Yahoo Finance"""
+        try:
+            # Use the evaluator's feed -> fundamentals -> yahoo adapter
+            # Or direct yfinance for bulk history
+            
+            logger.info(f"Fetching real history for {symbol}")
+            ticker = yf.Ticker(symbol)
+            df = ticker.history(start=start_date, end=end_date, interval="1d")
+            
+            if df.empty:
+                raise ValueError(f"No real data found for {symbol}")
+            
+            data = []
+            for index, row in df.iterrows():
+                # Yahoo Finance uses Close/Volume
+                data.append({
+                    'timestamp': index.to_pydatetime(),
+                    'price': float(row['Close']),
+                    'volume': float(row['Volume']),
+                    'open': float(row['Open']),
+                    'high': float(row['High']),
+                    'low': float(row['Low'])
+                })
+            return data
+            
+        except Exception as e:
+            logger.error(f"Failed to fetch real backtest data: {e}")
+            raise ValueError("Strict Real Data Only: Failed to fetch history.") from e
+
     def run_backtest(
         self,
         strategy_name: str,
@@ -84,10 +119,10 @@ class BacktestEngine:
         """
         logger.info(f"Running backtest: {strategy_name} on {symbol} from {start_date} to {end_date}")
         
-        # Generate mock price data if not provided
+        # STRICT REAL DATA ONLY
         if price_data is None:
-            price_data = self._generate_mock_price_data(symbol, start_date, end_date)
-        
+            price_data = self._fetch_real_historical_data(symbol, start_date, end_date)
+            
         # Initialize tracking variables
         capital = self.initial_capital
         position = 0.0  # Current position size
@@ -100,10 +135,23 @@ class BacktestEngine:
             price = data_point['price']
             
             # Evaluate strategy
+            # For backtesting, we need to inject the timestamp into the unified data context
+            # So the strategy knows it's "then", not "now". 
+            # However, our current agents primarily look at metrics passed in.
+            # Ideally, we would fetch historical fundamentals too, but for this reference implementation,
+            # we accept that fundamentals might be "latest" or require a point-in-time DB.
+            # Given the constraints, we focus on price dynamics and available snapshot data.
+            
             evaluation = self.evaluator.evaluate_strategy(
                 strategy_name=strategy_name,
                 asset=symbol,
-                market_data={'price': price}
+                market_data={
+                    'price': price,
+                    'volume': data_point.get('volume', 0),
+                    'open': data_point.get('open', price),
+                    'high': data_point.get('high', price),
+                    'low': data_point.get('low', price)
+                }
             )
             
             # Execute trade based on decision
@@ -233,38 +281,6 @@ class BacktestEngine:
             'avg_loss': round(avg_loss, 2)
         }
     
-    def _generate_mock_price_data(
-        self,
-        symbol: str,
-        start_date: str,
-        end_date: str
-    ) -> List[Dict]:
-        """Generate mock price data for testing"""
-        start = datetime.strptime(start_date, '%Y-%m-%d')
-        end = datetime.strptime(end_date, '%Y-%m-%d')
-        
-        days = (end - start).days
-        data = []
-        
-        # Generate random walk with drift
-        np.random.seed(42)  # Reproducible
-        base_price = 100.0
-        drift = 0.0005  # Slight upward drift
-        volatility = 0.02
-        
-        for i in range(days):
-            timestamp = start + timedelta(days=i)
-            returns = np.random.normal(drift, volatility)
-            base_price *= (1 + returns)
-            
-            data.append({
-                'timestamp': timestamp,
-                'price': base_price,
-                'volume': np.random.uniform(1000000, 5000000)
-            })
-        
-        return data
-
 
 # Singleton instance
 _backtest_engine: Optional[BacktestEngine] = None

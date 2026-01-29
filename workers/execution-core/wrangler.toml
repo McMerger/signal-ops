@@ -21,3 +21,9 @@ service = "strategy-engine"
 
 [triggers]
 crons = ["0 0 * * *"] # Daily at midnight UTC
+
+[vars]
+ALPHA_VANTAGE_KEY = "demo"
+COINGECKO_API_KEY = "public-api"
+MOONSHOT_API_KEY = "placeholder-key" # For local proxy/shared usage
+ETHERSCAN_API_KEY = "placeholder-key"

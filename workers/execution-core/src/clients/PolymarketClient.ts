@@ -1,6 +1,19 @@
 export class PolymarketClient {
     private baseUrl = "https://gamma-api.polymarket.com";
 
+    private assetMap: Record<string, string> = {
+        'BTC': 'will-bitcoin-hit-100k-in-2025',
+        'ETH': 'will-ethereum-reach-10000-in-2025',
+        'SOL': 'solana-all-time-high-2025',
+        'MSTR': 'will-mstr-stock-split-in-2025',
+        'COIN': 'coinbase-revenue-2025'
+    };
+
+    async getMarketForAsset(symbol: string) {
+        const slug = this.assetMap[symbol] || this.assetMap['BTC'];
+        return this.getMarket(slug);
+    }
+
     async getMarket(slug: string = "will-bitcoin-hit-100k-in-2025") {
         try {
             // Using the Gamma API for simplified market data

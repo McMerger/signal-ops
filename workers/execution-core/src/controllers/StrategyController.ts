@@ -14,61 +14,87 @@ export class StrategyController {
 
     /**
      * GET /api/v1/strategy/signals
-     * Returns reference strategy signals based on LIVE market data
+     * Returns reference strategy signals based on LIVE market data for a BASKET of assets.
      */
     async getSignals(c: Context<{ Bindings: Bindings }>) {
         try {
-            // 1. Fetch Live Data
-            const symbol = "BTC";
-            const [quote, fundamentals, prediction] = await Promise.all([
-                this.marketClient.getQuote(symbol),
-                this.marketClient.getFundamentals(symbol),
-                this.polyClient.getMarket("will-bitcoin-hit-100k-in-2025")
-            ]);
+            const basket = ["BTC", "ETH", "SOL"];
 
-            // 2. Calculate Intrinsic Value (Graham)
-            const growthMultiplier = 8.5 + (2 * (fundamentals.growth_rate * 100));
-            const intrinsicValue = (fundamentals.eps * growthMultiplier * 4.4) / fundamentals.aaa_corporate_bond_yield;
-            const adjustedIntrinsic = intrinsicValue * 2500; // Crypto scaling
+            // Evaluate all assets in parallel
+            const signals = await Promise.all(basket.map(async (symbol) => {
+                try {
+                    // 1. Fetch Live Data for this symbol
+                    const [quote, fundamentals, prediction] = await Promise.all([
+                        this.marketClient.getQuote(symbol),
+                        this.marketClient.getFundamentals(symbol),
+                        this.polyClient.getMarketForAsset(symbol).catch(() => null) // Allow failure for missing markets
+                    ]);
 
-            const marginOfSafety = (adjustedIntrinsic - quote.price) / adjustedIntrinsic;
+                    // 2. Calculate Intrinsic Value (Graham)
+                    const growthMultiplier = 8.5 + (2 * (fundamentals.growth_rate * 100));
+                    const intrinsicValue = (fundamentals.eps * growthMultiplier * 4.4) / fundamentals.aaa_corporate_bond_yield;
 
-            // 3. Determine Signal
-            let signal = "HOLD";
-            let strength = 0.5;
-            let reason = "Neutral Valuation";
+                    const scalingFactor = symbol === "BTC" ? 2500 : (symbol === "ETH" ? 180 : 20);
+                    const adjustedIntrinsic = intrinsicValue * scalingFactor;
 
-            if (marginOfSafety > 0.20 && (prediction?.probability || 0) > 0.60) {
-                signal = "STRONG BUY";
-                strength = 0.90;
-                reason = `Undervalued (${(marginOfSafety * 100).toFixed(1)}% MoS) + High Conviction (${(prediction?.probability || 0) * 100}%)`;
-            } else if (marginOfSafety > 0.10) {
-                signal = "ACCUMULATE";
-                strength = 0.75;
-                reason = "Undervalued";
-            } else if (marginOfSafety < -0.20) {
-                signal = "SELL";
-                strength = 0.80;
-                reason = "Significant Overvaluation";
-            }
+                    const marginOfSafety = (adjustedIntrinsic - quote.price) / adjustedIntrinsic;
 
-            return c.json({
-                strategy: "Reference: Value + Events (Graham/Kimi) [LIVE]",
-                target_weights: {
-                    "BTC": signal.includes("BUY") || signal === "ACCUMULATE" ? 0.60 : 0.30,
-                    "CASH": signal === "SELL" ? 0.50 : 0.10
-                },
-                latest_signals: [
-                    {
+                    // 3. Determine Signal
+                    let signal = "HOLD";
+                    let strength = 0.5;
+                    let reason = "Neutral Valuation";
+
+                    const prob = prediction?.probability || 0;
+
+                    if (marginOfSafety > 0.20 && prob > 0.60) {
+                        signal = "STRONG BUY";
+                        strength = 0.90;
+                        reason = `Undervalued (${(marginOfSafety * 100).toFixed(1)}%) + High Conviction (${(prob * 100).toFixed(0)}%)`;
+                    } else if (marginOfSafety > 0.10) {
+                        signal = "ACCUMULATE";
+                        strength = 0.75;
+                        reason = `Undervalued (${(marginOfSafety * 100).toFixed(1)}%)`;
+                    } else if (marginOfSafety < -0.20) {
+                        signal = "SELL";
+                        strength = 0.80;
+                        reason = `Overvalued (${(marginOfSafety * 100).toFixed(1)}%)`;
+                    }
+
+                    return {
                         asset: symbol,
                         signal: signal,
                         strength: strength,
                         current_price: quote.price,
                         intrinsic_value: Number(adjustedIntrinsic.toFixed(2)),
-                        prediction_probability: prediction?.probability,
+                        prediction_probability: prob,
                         reason: reason
-                    }
-                ],
+                    };
+                } catch (err: any) {
+                    return {
+                        asset: symbol,
+                        signal: "ERROR",
+                        reason: err.message
+                    };
+                }
+            }));
+
+            // Calculate Target Weights based on signals (Simple Heuristic for now)
+            const targets: Record<string, number> = { "CASH": 0.10 };
+            const buySignals = signals.filter(s => s.signal && (s.signal.includes("BUY") || s.signal === "ACCUMULATE"));
+
+            if (buySignals.length > 0) {
+                const weightPerAsset = 0.90 / buySignals.length;
+                buySignals.forEach(s => {
+                    if (s.asset) targets[s.asset] = weightPerAsset;
+                });
+            } else {
+                targets["CASH"] = 1.0; // Defensive
+            }
+
+            return c.json({
+                strategy: "Reference: Value + Events (Multi-Asset Basket) [LIVE]",
+                target_weights: targets,
+                latest_signals: signals,
                 timestamp: new Date().toISOString()
             });
         } catch (e: any) {

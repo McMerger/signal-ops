@@ -2,21 +2,23 @@ import { Context } from 'hono';
 import { PolymarketClient } from '../clients/PolymarketClient';
 import { MarketDataClient } from '../clients/MarketDataClient';
 import { EventService } from '../services/EventService';
+import { OnChainClient } from '../clients/OnChainClient';
+import { Bindings } from '../bindings';
 
 export class ResearchController {
     private polyClient: PolymarketClient;
-    private marketClient: MarketDataClient;
 
     constructor() {
         this.polyClient = new PolymarketClient();
-        this.marketClient = new MarketDataClient();
     }
 
-    async getIntrinsicValue(c: Context) {
+    async getIntrinsicValue(c: Context<{ Bindings: Bindings }>) {
         try {
+            const client = new MarketDataClient(c.env.ALPHA_VANTAGE_KEY); // Inject Key
+
             const symbol = c.req.query('symbol') || "BTC";
-            const quote = await this.marketClient.getQuote(symbol);
-            const fund = await this.marketClient.getFundamentals(symbol);
+            const quote = await client.getQuote(symbol);
+            const fund = await client.getFundamentals(symbol);
 
             // Benjamin Graham Formula (Simplified): V = EPS * (8.5 + 2g) * 4.4 / Y
             const growthMultiplier = 8.5 + (2 * (fund.growth_rate * 100));
@@ -81,15 +83,19 @@ export class ResearchController {
         }
     }
 
-    async getDecisionTree(c: Context) {
+    async getDecisionTree(c: Context<{ Bindings: Bindings }>) {
         try {
             const symbol = c.req.query('symbol') || "BTC";
 
-            // 1. Fetch Real Data
-            const [quote, fund, events] = await Promise.all([
-                this.marketClient.getQuote(symbol),
-                this.marketClient.getFundamentals(symbol),
-                new EventService().getBlockingEvents(symbol)
+            // 1. Fetch Real Data with Keys
+            const marketClient = new MarketDataClient(c.env.ALPHA_VANTAGE_KEY);
+            const onChainClient = new OnChainClient(c.env.ETHERSCAN_API_KEY);
+
+            const [quote, fund, events, flows] = await Promise.all([
+                marketClient.getQuote(symbol),
+                marketClient.getFundamentals(symbol),
+                new EventService().getBlockingEvents(symbol),
+                onChainClient.getNetworkFlows(symbol)
             ]);
 
             // 2. Build Tree Nodes
@@ -105,21 +111,39 @@ export class ResearchController {
             };
             nodes.push(eventNode);
 
-            // Node 2: Value (Only if Events passed)
-            let valueNode: any = { id: "node_2_value", label: "Intrinsic Value", status: "SKIPPED" };
+            // Node 2: Value (Graham)
+            let valueNode: any = { id: "node_2_value", label: "Fundamental Value", status: "SKIPPED" };
             if (eventNode.status === "PASS") {
-                // ... (simplified value logic for display)
-                const intrinsic = fund.eps * 15; // Simplified visual proxy
+                const intrinsic = fund.eps * 15;
                 const safe = (intrinsic - quote.price) > 0;
                 valueNode = {
                     id: "node_2_value",
                     label: "Graham Value Check",
                     status: safe ? "PASS" : "FAIL",
                     details: `Price $${quote.price} vs Intrinsic $${intrinsic.toFixed(2)}`,
-                    next: safe ? "node_3_prediction" : "REJECT"
+                    next: safe ? "node_3_onchain" : "REJECT"
                 };
             }
             nodes.push(valueNode);
+
+            // Node 3: On-Chain Flow (New Logic)
+            let chainNode: any = { id: "node_3_onchain", label: "On-Chain Confirmation", status: "SKIPPED" };
+            if (valueNode.status === "PASS") {
+                const congestion = (flows as any).congestion_status;
+                const risk = congestion === "HIGH";
+
+                chainNode = {
+                    id: "node_3_onchain",
+                    label: "On-Chain Flow Check",
+                    status: risk ? "WARN" : "PASS",
+                    details: congestion ? `Network Congestion: ${congestion}` : "No On-Chain Data (Equity)",
+                    next: "node_4_prediction"
+                };
+            }
+            nodes.push(chainNode);
+
+            // Simple final decision
+            const finalStatus = chainNode.status === "WARN" ? "Review" : "CANDIDATE";
 
             return c.json({
                 asset: symbol,

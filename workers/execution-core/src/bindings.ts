@@ -3,4 +3,5 @@ export type Bindings = {
     SIGNAL_KV: KVNamespace;
     ALPHA_VANTAGE_KEY: string;
     COINGECKO_API_KEY: string;
+    ETHERSCAN_API_KEY: string;
 };

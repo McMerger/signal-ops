@@ -239,6 +239,23 @@ fi
 
 echo ""
 
+# Start C++ Signal Core (Wasm Worker)
+echo -e "${BLUE}Step 7: Starting C++ Signal Core (Wasm)...${NC}"
+cd "$PROJECT_ROOT/workers/signal-core-wasm"
+
+if [ -f "wrangler.toml" ]; then
+    echo -e "${CYAN}Starting Signal Core Worker on port 8789...${NC}"
+    # Use npx wrangler directly
+    npx wrangler dev --port 8789 > /tmp/signalops-wasm.log 2>&1 &
+    WASM_PID=$!
+    echo $WASM_PID >> "$PID_FILE"
+    echo -e "${GREEN}✓ Signal Core (Wasm) started (PID: $WASM_PID)${NC}"
+else
+    echo -e "${YELLOW}! wrangler.toml not found, skipping Signal Core${NC}"
+fi
+
+echo ""
+
 # Wait for services to be ready
 echo -e "${BLUE}Step 7: Waiting for services to initialize...${NC}"
 sleep 5

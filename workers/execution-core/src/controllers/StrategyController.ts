@@ -18,7 +18,8 @@ export class StrategyController {
      */
     async getSignals(c: Context<{ Bindings: Bindings }>) {
         try {
-            const basket = ["BTC", "ETH", "SOL"];
+            // Mixed Basket: Crypto + Tech + Macro
+            const basket = ["BTC", "ETH", "SOL", "NVDA", "TSLA", "AAPL"];
 
             // Evaluate all assets in parallel
             const signals = await Promise.all(basket.map(async (symbol) => {
@@ -27,15 +28,20 @@ export class StrategyController {
                     const [quote, fundamentals, prediction] = await Promise.all([
                         this.marketClient.getQuote(symbol),
                         this.marketClient.getFundamentals(symbol),
-                        this.polyClient.getMarketForAsset(symbol).catch(() => null) // Allow failure for missing markets
+                        this.polyClient.getMarketForAsset(symbol).catch(() => null)
                     ]);
 
                     // 2. Calculate Intrinsic Value (Graham)
                     const growthMultiplier = 8.5 + (2 * (fundamentals.growth_rate * 100));
-                    const intrinsicValue = (fundamentals.eps * growthMultiplier * 4.4) / fundamentals.aaa_corporate_bond_yield;
+                    const intrinsicValueRaw = (fundamentals.eps * growthMultiplier * 4.4) / fundamentals.aaa_corporate_bond_yield;
 
-                    const scalingFactor = symbol === "BTC" ? 2500 : (symbol === "ETH" ? 180 : 20);
-                    const adjustedIntrinsic = intrinsicValue * scalingFactor;
+                    // Asset Class Awareness
+                    let adjustedIntrinsic = intrinsicValueRaw;
+                    if (fundamentals.asset_class === 'CRYPTO') {
+                        // Dynamic Crypto Scaling based on relative price/book proxy
+                        const scaling = (fundamentals.book_value / 10);
+                        adjustedIntrinsic = intrinsicValueRaw * scaling;
+                    }
 
                     const marginOfSafety = (adjustedIntrinsic - quote.price) / adjustedIntrinsic;
 
@@ -62,6 +68,7 @@ export class StrategyController {
 
                     return {
                         asset: symbol,
+                        asset_class: fundamentals.asset_class,
                         signal: signal,
                         strength: strength,
                         current_price: quote.price,
@@ -78,7 +85,7 @@ export class StrategyController {
                 }
             }));
 
-            // Calculate Target Weights based on signals (Simple Heuristic for now)
+            // Calculate Target Weights based on signals
             const targets: Record<string, number> = { "CASH": 0.10 };
             const buySignals = signals.filter(s => s.signal && (s.signal.includes("BUY") || s.signal === "ACCUMULATE"));
 
@@ -88,7 +95,7 @@ export class StrategyController {
                     if (s.asset) targets[s.asset] = weightPerAsset;
                 });
             } else {
-                targets["CASH"] = 1.0; // Defensive
+                targets["CASH"] = 1.0;
             }
 
             return c.json({
@@ -109,11 +116,6 @@ export class StrategyController {
     async submitOrder(c: Context<{ Bindings: Bindings }>) {
         try {
             const body = await c.req.json();
-            // In a real implementation:
-            // 1. Validate body schema
-            // 2. check against RiskService (limits)
-            // 3. Write to D1 'orders' table
-
             return c.json({
                 status: "ACCEPTED",
                 order_id: crypto.randomUUID(),

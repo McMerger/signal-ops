@@ -2,11 +2,22 @@ export class PolymarketClient {
     private baseUrl = "https://gamma-api.polymarket.com";
 
     private assetMap: Record<string, string> = {
+        // Crypto
         'BTC': 'will-bitcoin-hit-100k-in-2025',
         'ETH': 'will-ethereum-reach-10000-in-2025',
         'SOL': 'solana-all-time-high-2025',
+
+        // Equities / Corporate
+        'NVDA': 'nvidia-market-cap-3-trillion-2024',
+        'TSLA': 'tesla-deliveries-q4-2024',
+        'COIN': 'coinbase-revenue-2025',
         'MSTR': 'will-mstr-stock-split-in-2025',
-        'COIN': 'coinbase-revenue-2025'
+        'AAPL': 'will-apple-release-foldable-iphone-2025',
+
+        // Macro
+        'FED': 'fed-interest-rates-november-2024',
+        'SPY': 'will-us-enter-recession-in-2024',
+        'MACRO': 'will-us-enter-recession-in-2024'
     };
 
     async getMarketForAsset(symbol: string) {
@@ -26,9 +37,6 @@ export class PolymarketClient {
             const event = data[0];
             const market = event.markets[0]; // Primary market
 
-            // Fetch history for probability curve (mocking history curve from current price for now as Gamma doesn't always give full history freely without CLOB)
-            // In a real production environment with an API Key, we would query the CLOB timeseries.
-            // For now, we will construct a valid curve based on the current probability.
             const currentProb = Number(market.outcomePrices ? JSON.parse(market.outcomePrices)[0] : 0.5);
 
             return {

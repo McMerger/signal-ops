@@ -1,6 +1,7 @@
 {
     "name": "execution-core",
-    "version": "0.0.1",
+    "description": "SignalOps Execution Core - Event-Aware Algorithmic Trading Engine (Workers)",
+    "version": "1.0.0",
     "private": true,
     "scripts": {
         "deploy": "wrangler deploy",

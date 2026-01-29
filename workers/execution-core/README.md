@@ -1,37 +1,53 @@
-# Execution Core
+# SignalOps Execution Core
 
-**Cloudflare Worker (TypeScript)**
+**Part of the SignalOps Terminal "Trinity" Stack**
 
-The Execution Core is the central nervous system of the SignalOps Terminal. It handles API routing, portfolio state management, and strict risk enforcement.
+This is the **Execution Core** service, running on Cloudflare Workers (TypeScript). It implements the deterministic execution logic, API routing, and risk enforcement described in the main repository documentation.
 
-## Architecture
+For full architectural context, investment principles, and setup instructions, please refer to the [Root Documentation](../../README.md).
+
+---
+
+## 🏗️ Role in Architecture
+
+As defined in the main README:
+
+```mermaid
+graph TD
+    Execution["EXECUTION CORE (Cloudflare Workers)"]
+    Frontend[FRONTEND (Pages)]
+    Research[RESEARCH CORE]
+
+    Research -->|Intents| Execution
+    Execution -->|API Data| Frontend
+```
 
 * **Runtime**: Cloudflare Workers (TypeScript)
-* **Database**: Cloudflare D1 (`SIGNAL_DB`) for portfolio state and orders.
-* **Storage**: Cloudflare KV (`SIGNAL_KV`) for session caching.
-* **Role**: Explicitly deterministic execution and policy enforcement.
+* **Database**: Cloudflare D1 (`SIGNAL_DB`) for portfolio state.
+* **Risk**: Enforces "Margin of Safety" checks.
+* **Research**: Exposes Kimi K2.5 endpoints.
 
-## API Reference
+## 📡 API Reference
 
-### Portfolio
+This worker implements the `Execution Core` endpoints:
 
-* `GET /api/v1/portfolio/positions`: Current positions & PnL
-* `GET /api/v1/portfolio/risk`: Risk metrics & exposure
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/portfolio/positions` | GET | Current positions & PnL |
+| `/api/v1/portfolio/risk` | GET | Risk metrics & exposure |
+| `/api/v1/portfolio/performance` | GET | Strategy win rates |
+| `/api/v1/research/intrinsic-value` | GET | Intrinsic value, margin of safety |
+| `/api/v1/research/prediction` | GET | Prediction market summary |
+| `/api/v1/research/decision-tree` | GET | Latest decision tree |
+| `/api/v1/strategy/signals` | GET | Reference strategy signals |
+| `/api/v1/strategy/orders` | POST | Order submission |
 
-### Research (Kimi K2.5)
-
-* `GET /api/v1/research/intrinsic-value`: Graham-style fundamental analysis
-* `GET /api/v1/research/prediction`: Prediction market probabilities
-* `GET /api/v1/research/decision-tree`: Logic tree for latest decisions
-
-### Strategy
-
-* `GET /api/v1/strategy/signals`: Reference strategy outputs
-* `POST /api/v1/strategy/orders`: Order submission
-
-## Development
+## 🚀 Development
 
 ```bash
+# Install dependencies
 npm install
+
+# Run local development server
 npx wrangler dev
 ```

@@ -1,11 +1,8 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { PortfolioController } from './controllers/PortfolioController'
-
-type Bindings = {
-    SIGNAL_DB: D1Database;
-    SIGNAL_KV: KVNamespace;
-}
+import { ResearchController } from './controllers/ResearchController'
+import { Bindings } from './bindings'
 
 const app = new Hono<{ Bindings: Bindings }>()
 
@@ -43,8 +40,17 @@ market.get('/quotes', (c) => c.json({ message: 'Market quotes (Not implemented)'
 app.route('/api/v1/market', market)
 
 // Strategy Group (Stub)
+// Strategies Group
 const strategies = new Hono<{ Bindings: Bindings }>()
 strategies.get('/', (c) => c.json({ message: 'Active strategies (Not implemented)' }))
 app.route('/api/v1/strategies', strategies)
+
+// Research Group (New)
+const researchController = new ResearchController()
+const research = new Hono<{ Bindings: Bindings }>()
+research.get('/intrinsic-value', (c) => researchController.getIntrinsicValue(c))
+research.get('/prediction', (c) => researchController.getPredictionMarket(c))
+research.get('/decision-tree', (c) => researchController.getDecisionTree(c))
+app.route('/api/v1/research', research)
 
 export default app

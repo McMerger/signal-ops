@@ -1,95 +1,242 @@
-# SignalOps Terminal
+SignalOps Terminal
+Event-Aware Algorithmic Trading Engine
 
-**Event-Aware Algorithmic Trading Engine**
+SignalOps is an open-source trading system that routes fundamentals, prediction markets, and on-chain flows through a single transparent decision engine. At its core, it uses a Kimi K2.5–based research layer, Benjamin Graham–style value rules, and a high-signal, data-dense web interface. The system includes a fully specified reference strategy with backtests and a live execution path.
 
-The only open-source trading system that filters fundamentals, prediction markets, and on-chain flows through a single transparent decision engine—wrapped in an immersive, high-fidelity WebGL interface.
+Overview
+SignalOps is a cloud-native, polyglot trading engine. Every trade decision is represented as an explicit logic tree:
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Next.js 16](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
-[![WebAssembly](https://img.shields.io/badge/Wasm-Enabled-654FF0.svg)](https://webassembly.org/)
-[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020.svg)](https://workers.cloudflare.com/)
+Kimi K2.5 performs long-context research and orchestration.
 
----
+Graham-style intrinsic value rules determine what is investable.
 
-## ✨ Overview
+Real-time prediction markets and on-chain flows shape conviction, sizing, and timing.
 
-SignalOps is a **cloud-native implementation of a polyglot trading engine**. It treats every decision as an explicit logic tree, optimized for the edge.
+Cloudflare Workers handle deterministic execution at the edge.
 
-### Key Differentiators
+A reference strategy ships with full backtesting and a live integration example.
 
-| Feature | SignalOps | Traditional Bots |
-|---------|-----------|------------------|
-| **Data Sources** | 5 (Fundamentals, Prediction Markets, On-Chain, Technical, News) | 1-2 |
-| **Architecture** | **Serverless Polyglot** (TypeScript, Python, C++) | Monolithic Containers |
-| **Speed** | **0ms Cold Starts** (Workers) + Wasm Signals | Heavy JVM/Docker Startup |
-| **UI/UX** | High-Signal, Data-Dense Dashboards | Static dashboards |
+Investment Principles
+SignalOps encodes an opinionated philosophy around value and events:
 
----
+Intrinsic value first
+Assets are evaluated on fundamentals (earnings power, balance sheet strength, growth quality) to estimate intrinsic value per instrument.
 
-## 🏗️ Architecture (The "Trinity" Stack)
+Margin of safety
+The engine only considers entries where market price is sufficiently below intrinsic value. Discount thresholds are explicit and configurable.
 
-We utilize a **Cloudflare-native architecture** that leverages the best language for each task:
+Mechanical, basket-based positioning
+Portfolios are built as baskets of undervalued assets with rules-based weights and scheduled rebalancing. Discretion is minimized; rules are visible in code and in the UI.
 
-```
+Investing vs speculation
+Prediction markets, technicals, and microstructure are overlays. They modulate conviction and position size but do not override the requirement for fundamental value.
+
+Reference Strategy: Value + Events
+The repository ships with a reference strategy that makes the system concrete:
+
+Universe
+
+A defined list of liquid equities and on-chain assets.
+
+Universe files and filters are part of the repo.
+
+Entry rules
+
+Asset passes Graham-style filters (profitability, leverage, and earnings stability).
+
+Price trades below a configurable fraction of estimated intrinsic value.
+
+No blocked on-chain events (large unlocks, negative governance) in a configurable window.
+
+Prediction-market overlay
+
+Sizing is increased when prediction markets imply a sufficiently high probability of a positive catalyst.
+
+Sizing is reduced or entries are skipped when markets materially disagree with the fundamental thesis.
+
+Exit and rebalance rules
+
+Positions are trimmed or closed when margin of safety closes or risk constraints are hit.
+
+Periodic rebalance reconciles actual weights to target weights, with turnover and cost controls.
+
+All of these rules are implemented in the Python Strategy Engine and are testable via backtests and simulations.
+
+Kimi K2.5 Research Core
+The research and orchestration layer, built around Kimi K2.5, sits above the Workers stack.
+
+Roles:
+
+Long-context research
+Kimi ingests filings, transcripts, protocol documentation, macro material, and on-chain analytics to maintain structured “dossiers” per asset.
+
+Tool-based data fusion
+
+Fundamentals: financial statements, valuation metrics, and Graham-style criteria.
+
+Prediction markets: contract data, implied probabilities, and liquidity metrics.
+
+On-chain flows: contract activity, large transfers, governance votes, and unlock schedules.
+
+Agent swarm
+Separate agents handle fundamentals, prediction markets, on-chain/flows, and technical/microstructure. Their outputs are merged into a ranked decision list and an explicit decision tree.
+
+Policy and risk
+A dedicated agent enforces margin-of-safety thresholds, exposure limits, diversification rules, and other portfolio policies. Its outputs are “intents” that are passed to the deterministic Strategy Engine and Execution Core.
+
+Kimi generates research and proposals; execution is performed only via deterministic, testable rules.
+
+Prediction-Market Behaviour
+SignalOps treats prediction markets as a first-class, testable signal:
+
+Explicit signal design
+
+Raw prices are mapped to probabilities and normalized per contract type.
+
+Liquidity, spread, and recent order flow are tracked as features.
+
+Bias-aware logic
+
+The strategy can apply category-specific adjustments where markets tend to be structurally optimistic or pessimistic.
+
+This is parameterized and visible in configuration files.
+
+Role in the strategy
+
+Prediction markets primarily influence conviction and position sizing.
+
+They can veto or downsize trades that sharply contradict the fundamental thesis.
+
+Architecture
+SignalOps uses a Cloudflare-native architecture that assigns each component a focused role.
+
+text
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                     FRONTEND (Cloudflare Pages)                          │
-│  Next.js 16 + React 19 + TypeScript + Tailwind CSS                      │
-│  ├── Recharts (Data Viz) | Zustand State                                │
+│                       RESEARCH CORE (Kimi K2.5)                        │
+│  • Fundamental Valuation Agent                                         │
+│  • Prediction Market Agent                                             │
+│  • On-chain / Flows Agent                                              │
+│  • Risk & Policy Agent                                                 │
+│  Outputs: research artifacts and trade "intents"                       │
 └─────────────────────────────────────────────────────────────────────────┘
-                                   │
-                                   ▼ RPC / HTTP
+                                  │
+                                  ▼ intents / research APIs
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                  EXECUTION CORE (Cloudflare Workers)                     │
-│                           Language: TypeScript                          │
-│  • API Gateway & Routing                                                │
-│  • Portfolio Management (D1 Database)                                   │
-│  • Risk Manager Logic (Ported from Java)                                │
+│             EXECUTION CORE (Cloudflare Workers, TypeScript)            │
+│  • API Gateway & Routing                                               │
+│  • Portfolio & Order State (D1 Database)                               │
+│  • Risk Enforcement (limits, exposure, sanity checks)                  │
 └─────────────────────────────────────────────────────────────────────────┘
-           │                                          │
-           ▼ Async Binding                            ▼ Wasm Binding
+           │                                   │
+           ▼ Async Binding                     ▼ Wasm Binding
 ┌───────────────────────────────┐      ┌──────────────────────────────────┐
-│   STRATEGY ENGINE (Workers)   │      │     SIGNAL CORE (Workers)        │
-│      Language: Python         │      │     Language: C++ (Wasm)         │
-│  • Data Science / ML Logic    │      │  • Order Book Filtering          │
-│  • Prediction Market Agents   │      │  • High-Frequency Indicators     │
-│  • Probabilistic Modeling     │      │  • SIMD Optimizations            │
+│   STRATEGY ENGINE (Workers)   │      │      SIGNAL CORE (Workers)       │
+│      Language: Python         │      │      Language: C++ (Wasm)        │
+│  • Deterministic Strategy     │      │  • Order Book Filtering           │
+│    Logic (reference strategy, │      │  • High-Frequency Indicators      │
+│    backtest-compatible)       │      │  • SIMD Accelerated Metrics       │
 └───────────────────────────────┘      └──────────────────────────────────┘
-```
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│        FRONTEND (Cloudflare Pages, Next.js + TypeScript + Tailwind)    │
+│  • High-signal, data-dense dashboards                                  │
+│  • Intrinsic value vs price, margin of safety                          │
+│  • Prediction-market curves and flows                                  │
+│  • On-chain activity and risk metrics                                  │
+│  • Decision-tree views for each trade                                  │
+│  • Strategy overview and performance reports                           │
+└─────────────────────────────────────────────────────────────────────────┘
+Service Topology
+Service	Language	Hosted On	Role	Status
+Frontend	TypeScript	Cloudflare Pages	Dashboard, visualization, auth	Live
+Execution Core	TypeScript	Cloudflare Workers	API, risk, portfolio, user management	Live
+Strategy Engine	Python	Cloudflare Workers	Deterministic strategy logic, backtest parity	In progress
+Signal Engine	C++ (Wasm)	Cloudflare Workers	Compute-intensive signal processing	In progress
+Research Core	Kimi K2.5	External / managed	Long-context research, orchestration, policy	Initial
+Backtesting and Evaluation
+SignalOps includes a minimal but realistic backtesting stack for the reference strategy:
 
-### Service Topology
+Historical data
 
-| Service | Language | Hosted On | Role | Status |
-|---------|----------|-----------|------|--------|
-| **Frontend** | TypeScript | Cloudflare Pages | Dashboard, Visualization, Auth | ✅ Live |
-| **Execution Core** | TypeScript | Cloudflare Workers | API, Risk, Portfolio, User Mgmt | ✅ Live |
-| **Strategy Engine**| Python | Cloudflare Workers | Complex Strategy Logic, Data Aggregation | 🚧 Porting |
-| **Signal Engine** | C++ (Wasm) | Cloudflare Workers | Compute-intensive Signal Processing | 🚧 Wasm Build |
+Price series and corporate events for the defined universe.
 
----
+Historical prediction-market time series for a subset of contracts.
 
-## 🎨 Frontend: The Terminal Experience
+On-chain event logs for supported assets.
 
-The frontend is built for **sensory immersion**, featuring 8 unique public pages and 10+ authenticated pages.
+Backtest engine
 
-*(See previous documentation for detailed aesthetic pillars)*
+Simulates the same event stream the live system would see.
 
----
+Applies the same deterministic strategy logic used in production.
 
-## 🚀 Quick Start
+Models transaction costs, slippage, and basic execution assumptions.
 
-### Prerequisites
+Metrics
 
-- Node.js 20+
-- Docker (for local development of DB/Redis)
-- Cloudflare Wrangler (`npm install -g wrangler`)
+Cumulative and annualized returns.
 
-### Development (Local)
+Volatility, Sharpe, max drawdown.
 
-We use a unified `docker-compose` setup that spins up the database and a local Wrangler development proxy.
+Turnover, hit rate, average win/loss, exposure by asset and sector.
 
-```bash
+Backtest reports for the reference strategy are generated as artifacts (e.g., CSV/HTML reports) and exposed in the UI and docs.
+
+Live Trading Path
+SignalOps is designed to move a strategy from backtest to live in a controlled way:
+
+Paper trading / sandbox mode
+
+Uses the Execution Core to route orders to a paper or sandbox environment.
+
+Logs all decisions and fills for comparison against backtested expectations.
+
+Live integration example
+
+The repo includes a minimal broker/exchange adapter and configuration for a single venue.
+
+The adapter demonstrates authentication, order submission, status polling, and error handling.
+
+Monitoring
+
+Dashboards compare backtested vs realized performance and slippage.
+
+All decisions are logged alongside their decision trees and research context.
+
+Frontend
+The frontend is built for speed, clarity, and inspection:
+
+Strategy cards
+
+Summary per strategy: rules, universe, risk controls, backtest metrics, live status.
+
+Research and decision views
+
+For any asset or trade, show fundamentals, prediction-market signals, on-chain events, and risk constraints that led to the decision.
+
+Portfolio and risk
+
+Current positions, exposures, and key risk metrics.
+
+Historical performance and drawdown charts.
+
+No 3D or visual noise, just data and explanations.
+
+Quick Start
+Prerequisites
+Node.js 20+
+
+Docker (for local DB/Redis)
+
+Cloudflare Wrangler (npm install -g wrangler)
+
+Optional: credentials for a supported broker/exchange sandbox
+
+Development (Local)
+A unified docker-compose setup spins up the database and a local Wrangler development proxy.
+
+bash
 # Clone the repository
 git clone https://github.com/McMerger/signal-ops.git
 cd signal-ops
@@ -97,15 +244,13 @@ cd signal-ops
 # Start everything (Frontend + Workers + DB)
 docker-compose up -d
 
-# View Logs
+# View logs
 docker-compose logs -f execution-core
-```
-
-### Manual Service Start
-
-```bash
+Manual Service Start
+bash
 # Frontend
 cd frontend
+npm install
 npm run dev
 
 # Execution Core (Worker)
@@ -113,45 +258,53 @@ cd workers/execution-core
 npm install
 npx wrangler dev
 
-# Python Strategy
+# Python Strategy Engine
 cd python-strategy-engine
-# (Follow specific python setup)
-```
+# (Follow specific Python setup and backtest instructions)
+API Reference
+Execution Core (Port 8787)
+Endpoint	Method	Description
+/api/v1/portfolio/positions	GET	Current positions and PnL
+/api/v1/portfolio/risk	GET	Risk metrics and exposure
+/api/v1/portfolio/performance	GET	Strategy performance metrics
+/api/v1/market/quotes	GET	Real-time quotes (mock for local development)
+/api/v1/research/intrinsic-value	GET	Intrinsic value, margin of safety, Graham flags
+/api/v1/research/prediction	GET	Prediction-market summary and adjusted probabilities
+/api/v1/research/decision-tree	GET	Latest decision tree for an asset or portfolio
+/api/v1/strategy/signals	GET	Reference strategy signals and target weights
+/api/v1/strategy/orders	POST	Submit strategy-generated orders for execution
+Roadmap
+Completed
+Migration to TypeScript Cloudflare Workers
 
----
+Next.js + Tailwind frontend with data-dense layout
 
-## 📡 API Reference
+Removal of legacy Go/Java services
 
-### Execution Core (Port 8787)
+Docker Compose + Wrangler integration
 
-The new TypeScript core replaces the legacy Go API.
+Initial Kimi K2.5 research core (fundamental and prediction-market agents)
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/v1/portfolio/positions` | GET | Current positions & PnL |
-| `/api/v1/portfolio/risk` | GET | Risk metrics & exposure |
-| `/api/v1/portfolio/performance` | GET | Strategy win rates |
-| `/api/v1/market/quotes` | GET | Real-time quotes (Mock) |
+Definition and implementation of one reference strategy
 
----
+Basic backtest engine and reporting for the reference strategy
 
-## 📈 Roadmap
+In Progress
+Full port of Python strategy logic to Cloudflare Python Workers
 
-### ✅ Completed
+C++ order-book and signal logic compiled to Wasm
 
-- [x] **Stack Migration**: Consolidated Go/Java services into TypeScript Cloudflare Workers.
-- [x] **Frontend**: Next.js 16 + WebGL.
-- [x] **Risk Logic**: Ported Java Risk Manager logic to TypeScript.
-- [x] **Infrastructure**: Docker Compose + Wrangler integration.
+Production-grade migration from local Postgres to Cloudflare D1
 
-### 🚧 In Progress
+Expanded Kimi agents for on-chain and microstructure features
 
-- [ ] **Strategy Engine**: Full port of Python logic to Cloudflare Python Workers.
-- [ ] **Signal Core**: Compiling C++ order book logic to Wasm.
-- [ ] **Database**: Migration from local Postgres to Cloudflare D1 (in production).
+Hardened broker/exchange adapters and live monitoring
 
-### 📋 Planned
+Planned
+Mobile-friendly high-density data views
 
-- [ ] **Mobile Optimization**: High-performance WebGL on mobile.
-- [ ] **SaaS Mode**: Multi-tenant database schema.
-- [ ] **AI Integration**: LLM-based trade analysis.
+Multi-tenant SaaS mode (segmented schemas)
+
+Additional reference strategies and datasets
+
+Deeper AI support for explanations, scenario analysis, and human-in-the-loop review

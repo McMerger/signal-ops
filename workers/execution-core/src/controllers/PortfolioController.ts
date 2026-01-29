@@ -1,11 +1,6 @@
 import { Context } from 'hono';
 import { RiskService } from '../services/RiskService';
-
-// Define the environment bindings
-type Bindings = {
-    SIGNAL_DB: D1Database;
-    // SIGNAL_KV: KVNamespace;
-};
+import { Bindings } from '../bindings';
 
 export class PortfolioController {
     private riskService: RiskService;

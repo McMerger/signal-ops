@@ -1,6 +1,7 @@
 import { Context } from 'hono';
 import { PolymarketClient } from '../clients/PolymarketClient';
 import { MarketDataClient } from '../clients/MarketDataClient';
+import { EventService } from '../services/EventService';
 
 export class ResearchController {
     private polyClient: PolymarketClient;
@@ -81,30 +82,53 @@ export class ResearchController {
     }
 
     async getDecisionTree(c: Context) {
-        // This would fetch from the Kimi Knowledge Graph in a real deployment
-        const symbol = c.req.query('symbol') || "BTC";
-        return c.json({
-            asset: symbol,
-            root_node: "Intrinsic Value Check",
-            branches: [
-                {
-                    condition: "Margin of Safety > 20%",
-                    outcome: "PASS",
-                    next: "Prediction Market Check"
-                },
-                {
-                    condition: "Prediction Probability > 60%",
-                    outcome: "PASS",
-                    next: "Risk Check"
-                },
-                {
-                    condition: "Max Portfolio Weight < 15%",
-                    outcome: "PASS",
-                    next: "EXECUTE_BUY"
-                }
-            ],
-            final_decision: "ACCUMULATE",
-            confidence: 0.85
-        });
+        try {
+            const symbol = c.req.query('symbol') || "BTC";
+
+            // 1. Fetch Real Data
+            const [quote, fund, events] = await Promise.all([
+                this.marketClient.getQuote(symbol),
+                this.marketClient.getFundamentals(symbol),
+                new EventService().getBlockingEvents(symbol)
+            ]);
+
+            // 2. Build Tree Nodes
+            const nodes = [];
+
+            // Node 1: Events
+            const eventNode = {
+                id: "node_1_events",
+                label: "Event Block Check",
+                status: events.length > 0 ? "BLOCK" : "PASS",
+                details: events.length > 0 ? `Blocked by: ${events[0].description}` : "No critical events",
+                next: "node_2_value"
+            };
+            nodes.push(eventNode);
+
+            // Node 2: Value (Only if Events passed)
+            let valueNode: any = { id: "node_2_value", label: "Intrinsic Value", status: "SKIPPED" };
+            if (eventNode.status === "PASS") {
+                // ... (simplified value logic for display)
+                const intrinsic = fund.eps * 15; // Simplified visual proxy
+                const safe = (intrinsic - quote.price) > 0;
+                valueNode = {
+                    id: "node_2_value",
+                    label: "Graham Value Check",
+                    status: safe ? "PASS" : "FAIL",
+                    details: `Price $${quote.price} vs Intrinsic $${intrinsic.toFixed(2)}`,
+                    next: safe ? "node_3_prediction" : "REJECT"
+                };
+            }
+            nodes.push(valueNode);
+
+            return c.json({
+                asset: symbol,
+                generated_at: new Date().toISOString(),
+                decision_flow: nodes,
+                final_outcome: nodes[nodes.length - 1].status === "PASS" ? "CANDIDATE" : "REJECT"
+            });
+        } catch (e: any) {
+            return c.json({ error: e.message }, 500);
+        }
     }
 }

@@ -4,6 +4,7 @@ import { MarketDataClient } from '../clients/MarketDataClient';
 import { PolymarketClient } from '../clients/PolymarketClient';
 import { RiskService } from '../services/RiskService';
 import { BrokerFactory } from '../services/BrokerService';
+import { EventService } from '../services/EventService';
 
 export class StrategyController {
     private marketClient: MarketDataClient;
@@ -27,11 +28,28 @@ export class StrategyController {
             const signals = await Promise.all(basket.map(async (symbol) => {
                 try {
                     // 1. Fetch Live Data for this symbol
-                    const [quote, fundamentals, prediction] = await Promise.all([
+                    const [quote, fundamentals, prediction, events] = await Promise.all([
                         this.marketClient.getQuote(symbol),
                         this.marketClient.getFundamentals(symbol),
-                        this.polyClient.getMarketForAsset(symbol).catch(() => null)
+                        this.polyClient.getMarketForAsset(symbol).catch(() => null),
+                        new EventService().getBlockingEvents(symbol) // New: Check for blockers
                     ]);
+
+                    // 0. Event Block Check (Safety First)
+                    const blockingEvent = events.length > 0 ? events[0] : null;
+
+                    if (blockingEvent) {
+                        return {
+                            asset: symbol,
+                            asset_class: fundamentals.asset_class,
+                            signal: "HOLD",
+                            strength: 0.0,
+                            current_price: quote.price,
+                            intrinsic_value: 0, // N/A logic
+                            prediction_probability: 0,
+                            reason: `Blocked by Event: ${blockingEvent.description} (${blockingEvent.date})`
+                        };
+                    }
 
                     // 2. Calculate Intrinsic Value (Graham)
                     const growthMultiplier = 8.5 + (2 * (fundamentals.growth_rate * 100));

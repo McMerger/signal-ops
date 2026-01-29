@@ -52,7 +52,6 @@ const market = new Hono<{ Bindings: Bindings }>()
 market.get('/quotes', (c) => marketController.getQuote(c))
 app.route('/api/v1/market', market)
 
-// Strategy Group (Stub)
 // Strategy Group
 const strategyController = new StrategyController()
 const strategy = new Hono<{ Bindings: Bindings }>()

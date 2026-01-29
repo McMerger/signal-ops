@@ -28,6 +28,13 @@ export class RiskService {
         maxDrawdownPct: 0.20        // 20%
     };
 
+    // Beginner limits (Safe Defaults per README)
+    private static readonly BEGINNER_LIMITS: RiskLimits = {
+        maxExposure: 10000.0,       // $10k Cap
+        maxPositionSize: 2000.0,    // $2k per trade
+        maxDrawdownPct: 0.10        // 10% Hard Stop
+    };
+
     private accountLimits: Map<string, RiskLimits> = new Map();
 
     constructor() {
@@ -35,6 +42,11 @@ export class RiskService {
     }
 
     private getLimits(accountId: string): RiskLimits {
+        // In real app, check user tier/mode from DB or Auth token
+        // For now, if accountId ends with "_BEGINNER", use safe defaults
+        if (accountId.endsWith("_BEGINNER")) {
+            return RiskService.BEGINNER_LIMITS;
+        }
         return this.accountLimits.get(accountId) || RiskService.DEFAULT_LIMITS;
     }
 

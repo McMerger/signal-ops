@@ -153,8 +153,8 @@ SignalOps uses a Cloudflare-native architecture, designed to be multi-asset from
 ### Service Topology
 
 | Service         | Language        | Hosted On           | Role                                                   | Status       |
-|----------------|-----------------|---------------------|--------------------------------------------------------|-------------|
-| Frontend       | TypeScript      | Cloudflare Pages    | Beginner-to-pro UI, dashboard, visualization, auth     | Live        |
+|:----------------|:----------------|:--------------------|:-------------------------------------------------------|:-------------|
+| Frontend        | TypeScript      | Cloudflare Pages    | Beginner-to-pro UI, dashboard, visualization, auth     | Live         |
 | Execution Core | TypeScript      | Cloudflare Workers  | API, risk, multi-asset portfolio and order management  | Live        |
 | Strategy Engine| Python          | Cloudflare Workers  | Deterministic strategy logic, backtest parity          | In progress |
 | Signal Engine  | C++ (Wasm)      | Cloudflare Workers  | Compute-intensive signal processing                    | In progress |
@@ -282,7 +282,8 @@ cd python-strategy-engine
 | `/api/v1/research/prediction`      | GET    | Prediction-market summary and adjusted probabilities        |
 | `/api/v1/research/decision-tree`   | GET    | Latest decision tree for an asset or portfolio              |
 | `/api/v1/strategy/signals`         | GET    | Reference strategy signals and target weights               |
-| `/api/v1/strategy/orders`          | POST   | Submit strategy-generated orders for execution              |
+| `/api/v1/strategy/orders`          | POST   | Submit orders via Broker Service (Paper/Live)               |
+| `/api/v1/user/preferences`         | GET/POST| Saved layouts, UI mode (Beginner/Pro), and themes           |
 
 ***
 

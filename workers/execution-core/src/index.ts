@@ -15,10 +15,16 @@ const portfolioController = new PortfolioController()
 
 app.get('/', (c) => {
     return c.json({
-        service: 'SignalOps Execution Core',
-        status: 'operational',
-        runtime: 'Cloudflare Workers (TypeScript)',
-        ported_from: ['Go', 'Java']
+        service: 'SignalOps Terminal',
+        tagline: 'Event-Aware Algorithmic Trading Engine',
+        version: '1.0.0',
+        architecture: {
+            research: 'Kimi K2.5 Core (External)',
+            execution: 'Cloudflare Workers (TypeScript)',
+            strategy: 'Python Workers (Deterministic)',
+            signals: 'C++ Wasm (High-Frequency)'
+        },
+        status: 'operational'
     })
 })
 

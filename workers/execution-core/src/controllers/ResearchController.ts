@@ -9,11 +9,11 @@ export class ResearchController {
             current_price: 68000.00,
             margin_of_safety: -0.23, // Overvalued
             graham_flags: {
-                earnings_stability: true,
-                financial_strength: true,
-                growth_quality: false
+                earnings_stability: "PASS",
+                financial_strength: "PASS",
+                growth_quality: "FAIL (Cyclical)"
             },
-            methodology: 'Kimi K2.5 Fundamental Analysis (Mock)'
+            methodology: 'Kimi K2.5 + Benjamin Graham Intrinsic Value'
         })
     }
 

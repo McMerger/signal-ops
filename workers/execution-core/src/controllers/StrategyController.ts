@@ -9,7 +9,7 @@ export class StrategyController {
     async getSignals(c: Context<{ Bindings: Bindings }>) {
         // Mock data for reference strategy
         return c.json({
-            strategy: "Graham-Value-Events-v1",
+            strategy: "Reference: Value + Events (Graham/Kimi)",
             target_weights: {
                 "BTC": 0.40,
                 "ETH": 0.30,
@@ -22,8 +22,8 @@ export class StrategyController {
                 {
                     asset: "BTC",
                     signal: "ACCUMULATE",
-                    strength: 0.8,
-                    reason: "Intrinsic Value > Price (MoS: 15%)"
+                    strength: 0.85,
+                    reason: "Price < Intrinsic Value (20% Discount) + Positive Flow"
                 },
                 {
                     asset: "ETH",

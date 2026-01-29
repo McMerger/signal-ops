@@ -126,34 +126,9 @@ class PredictionMarketFeed:
     
     def __init__(self, use_mock=False):
         self.polymarket = PolymarketAdapter()
-        self.use_mock = use_mock
+        # use_mock is ignored now - Strict Real Data Only
         self.cache = {}
         
-        # Mock data for offline dev
-        self.mock_events = {
-            'btc_100k': {
-                'source': 'mock',
-                'title': 'Bitcoin above $100k by EOY (Mock)',
-                'yes_probability': 0.45,
-                'volume': 500000,
-                'updated_at': datetime.now().isoformat()
-            },
-            'fed_rate': {
-                'source': 'mock',
-                'title': 'Fed Rate Above 5% (Mock)',
-                'yes_probability': 0.68,
-                'volume': 250000,
-                'updated_at': datetime.now().isoformat()
-            },
-            'recession': {
-                'source': 'mock',
-                'title': 'US Recession 2025 (Mock)',
-                'yes_probability': 0.32,
-                'volume': 300000,
-                'updated_at': datetime.now().isoformat()
-            }
-        }
-    
     def get_events(self, event_config):
         """
         Fetch multiple event probabilities.
@@ -179,20 +154,15 @@ class PredictionMarketFeed:
                     results[event_name] = cached
                     continue
             
-            # Use mock if enabled
-            if self.use_mock and event_name in self.mock_events:
-                results[event_name] = self.mock_events[event_name]
-                continue
-            
-            # Fetch from Polymarket
+            # Fetch from Polymarket - REAL DATA ONLY
             odds = self.polymarket.get_market_odds(market_slug)
             
             if odds:
                 results[event_name] = odds
                 self.cache[cache_key] = odds
-            elif event_name in self.mock_events:
-                print(f"Using mock fallback for {event_name}")
-                results[event_name] = self.mock_events[event_name]
+            else:
+                 print(f"Warning: Failed to fetch real data for {event_name}. No mock fallback used.")
+                 # Do not add to results
         
         return results
     

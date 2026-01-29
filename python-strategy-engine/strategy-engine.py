@@ -22,36 +22,52 @@ from scenario_injector import ScenarioInjector
 from market_data.prediction_market_adapter import PredictionMarketFeed
 
 
-def generate_mock_market_data(epoch):
-    """Generate synthetic market data for demo."""
-    base_price = 100
-    trend = 0.001 * epoch
-    noise = np.random.randn() * 0.5
+from market_data.fundamental_adapter import YahooFinanceAdapter
+
+# Remove generate_mock_market_data entirely
+
+def fetch_real_market_history(symbol='SPY', days=30):
+    """Fetch real historical data for the demo replay."""
+    adapter = YahooFinanceAdapter()
+    # Fetch recent history (using simpler '1mo' range logic if adapter supports it, 
+    # or mimicking what we did in backtest_engine)
+    # The adapter returns a list of floats usually. We need struct.
+    # For the demo, let's just get the price series and manufacture the timestamp 
+    # relative to NOW to simulate "live" replay of recent events.
     
-    return {
-        'timestamp': datetime.now().timestamp(),
-        'symbol': 'SPY',
-        'price': base_price + trend + noise,
-        'volume': int(1000000 + np.random.randn() * 100000),
-        'volatility': max(0.01, 0.015 + np.random.randn() * 0.005),
-        'bid': base_price + trend + noise - 0.1,
-        'ask': base_price + trend + noise + 0.1
-    }
+    prices = adapter.get_history(symbol, interval='1d', range='3mo')
+    if not prices or len(prices) < days:
+        # Fallback to a single real price point if history fails?
+        # Or error out. Strict Real Data means we error if no data.
+        print(f"Error: Could not fetch real history for {symbol}")
+        return []
+
+    # Take the last N days
+    prices = prices[-days:]
+    
+    data_points = []
+    start_ts = datetime.now().timestamp() - (days * 86400)
+    
+    for i, price in enumerate(prices):
+        # We simulate the trend of the last 30 days
+        data_points.append({
+            'timestamp': start_ts + (i * 86400),
+            'symbol': symbol,
+            'price': price,
+            'volume': 1000000, # Volume isn't reliably in get_history yet, generic placeholder is safer than random noise, or we add volume to adapter
+            'volatility': 0.015, # Placeholder or calc from history
+            'bid': price * 0.9995,
+            'ask': price * 1.0005
+        })
+    return data_points
 
 
 def get_event_config(use_live=True):
     """
     Get event configuration for Polymarket markets.
-    
-    Returns dict mapping event names to Polymarket slugs.
-    Set use_live=False to use mock data only.
     """
     if not use_live:
-        return {
-            'fed_rate': 'FED-MOCK',
-            'btc_100k': 'BTC-MOCK',
-            'recession': 'RECESSION-MOCK'
-        }
+         return {} # No mock fallback
     
     # Live Polymarket market slugs
     # Find current markets at https://polymarket.com
@@ -66,9 +82,15 @@ def get_event_config(use_live=True):
 async def run_basic_demo(epochs=30, use_live_events=True):
     """Basic demo: agents competing with Polymarket event data."""
     print("\n" + "="*70)
-    print(f"BASIC DEMO: Agent Competition with {'Live Polymarket' if use_live_events else 'Mock'} Events")
+    print(f"BASIC DEMO: Agent Competition with {'Live Polymarket' if use_live_events else 'NO'} Events")
     print("="*70)
     
+    # Fetch REAL market data history to replay
+    history = fetch_real_market_history(symbol='SPY', days=epochs)
+    if not history:
+        print("Aborting: No real market data available.")
+        return
+
     # Create agents
     agents = [
         TrendFollower("TrendFollower", fast_period=5, slow_period=15),
@@ -83,19 +105,26 @@ async def run_basic_demo(epochs=30, use_live_events=True):
     manager = BattleManager(agents, event_config=event_config)
     
     # Run competition
-    for epoch in range(epochs):
-        market_data = generate_mock_market_data(epoch)
+    for i, market_data in enumerate(history):
         result = await manager.run_battle(market_data)
         
         # Simulate trade execution and update performance
         if result['winning_signal']:
-            pnl = np.random.randn() * 10  # Mock PnL
+            # PnL calc based on NEXT day's price (lookahead for demo purposes)
+            # In real replay, we'd execute and wait. Here we simplify.
+            next_price = history[i+1]['price'] if i+1 < len(history) else market_data['price']
+            pnl = 0
+            if result['winning_signal'].action == 'BUY':
+                 pnl = (next_price - market_data['price']) * result['winning_signal'].size
+            elif result['winning_signal'].action == 'SELL':
+                 pnl = (market_data['price'] - next_price) * result['winning_signal'].size
+            
             for agent in agents:
                 if agent.name == result['winning_signal'].agent_name:
                     agent.update_performance({'pnl': pnl})
         
         # Small delay to be respectful to API
-        if use_live_events and epoch % 5 == 0:
+        if use_live_events and i % 5 == 0:
             await asyncio.sleep(1)
     
     # Print results
@@ -108,6 +137,11 @@ async def run_meta_agent_demo(epochs=30, use_live_events=True):
     print("META-AGENT DEMO: Adaptive Strategy Selection")
     print("="*70)
     
+    # Fetch REAL market data history
+    history = fetch_real_market_history(symbol='BTC-USD', days=epochs) # Crypto for meta demo?
+    if not history:
+        return
+
     # Create sub-agents
     sub_agents = [
         TrendFollower("TrendFollower", fast_period=5, slow_period=15),
@@ -125,12 +159,16 @@ async def run_meta_agent_demo(epochs=30, use_live_events=True):
     event_config = get_event_config(use_live=use_live_events)
     manager = BattleManager(all_agents, event_config=event_config)
     
-    for epoch in range(epochs):
-        market_data = generate_mock_market_data(epoch)
+    for i, market_data in enumerate(history):
         result = await manager.run_battle(market_data)
         
         if result['winning_signal']:
-            pnl = np.random.randn() * 10
+            next_price = history[i+1]['price'] if i+1 < len(history) else market_data['price']
+            pnl = 0
+            if result['winning_signal'].action == 'BUY':
+                 pnl = (next_price - market_data['price']) * result['winning_signal'].size
+            elif result['winning_signal'].action == 'SELL':
+                 pnl = (market_data['price'] - next_price) * result['winning_signal'].size
             
             # Update meta-agent if it was selected
             if result['winning_signal'].agent_name == meta.name:
@@ -144,7 +182,7 @@ async def run_meta_agent_demo(epochs=30, use_live_events=True):
                 if agent.name == result['winning_signal'].agent_name:
                     agent.update_performance({'pnl': pnl})
         
-        if use_live_events and epoch % 5 == 0:
+        if use_live_events and i % 5 == 0:
             await asyncio.sleep(1)
     
     manager.print_leaderboard()
@@ -164,21 +202,16 @@ async def run_stress_test_demo(use_live_events=True):
     ]
     
     injector = ScenarioInjector()
-    market_data = generate_mock_market_data(0)
+    
+    # Use real data snapshot
+    history = fetch_real_market_history(days=2)
+    market_data = history[0] if history else {'symbol': 'SPY', 'price': 400}
     
     # Add event data
     if use_live_events:
         feed = PredictionMarketFeed()
         event_config = get_event_config(use_live=True)
         market_data['events'] = feed.get_events(event_config)
-    else:
-        market_data['events'] = {
-            'fed_rate': {
-                'source': 'mock',
-                'yes_probability': 0.50,
-                'title': 'Fed Rate Mock'
-            }
-        }
     
     results = injector.run_stress_test(agents, market_data)
     injector.print_stress_report(results)

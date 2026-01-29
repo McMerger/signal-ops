@@ -21,13 +21,26 @@ export interface IBroker {
     getBuyingPower(): Promise<number>;
 }
 
+import { MarketDataClient } from '../clients/MarketDataClient';
+
 export class PaperBroker implements IBroker {
+    private marketClient: MarketDataClient;
+
+    constructor() {
+        this.marketClient = new MarketDataClient();
+    }
+
     async placeOrder(order: OrderRequest): Promise<ExecutionResult> {
         // Simulate network latency
         await new Promise(resolve => setTimeout(resolve, 50));
 
-        // Simulate execution logic
-        const executedPrice = order.price || 100.00; // Mock price if market
+        let executedPrice = order.price;
+
+        if (!executedPrice) {
+            // MARKET ORDER: Must fetch REAL price
+            const quote = await this.marketClient.getQuote(order.symbol);
+            executedPrice = quote.price;
+        }
 
         return {
             orderId: crypto.randomUUID(),
@@ -36,12 +49,12 @@ export class PaperBroker implements IBroker {
             filledQuantity: order.quantity,
             timestamp: new Date().toISOString(),
             brokerOrderId: `PAPER-${crypto.randomUUID().split('-')[0]}`,
-            reason: "Simulated Fill"
+            reason: "Simulated Fill w/ Real Data"
         };
     }
 
     async getBuyingPower(): Promise<number> {
-        return 100000; // Mock $100k buying power
+        return 100000; // Mock $100k buying power (Acceptable for Paper Account)
     }
 }
 

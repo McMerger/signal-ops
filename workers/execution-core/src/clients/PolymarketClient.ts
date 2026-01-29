@@ -21,7 +21,8 @@ export class PolymarketClient {
     };
 
     async getMarketForAsset(symbol: string) {
-        const slug = this.assetMap[symbol] || this.assetMap['BTC'];
+        const slug = this.assetMap[symbol];
+        if (!slug) return null; // Strict: No fallback
         return this.getMarket(slug);
     }
 

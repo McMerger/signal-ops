@@ -1,10 +1,4 @@
-***
-
-# SignalOps Terminal
-
-Event-Aware Algorithmic Trading Engine
-
-SignalOps is an open-source trading system that routes fundamentals, prediction markets, and on-chain flows through a single transparent decision engine. It is designed to handle a broad range of asset classes in depth, including equities, ETFs, futures, options, crypto, and protocol-level on-chain assets. At its core, it uses a Kimi K2.5–based research layer, Benjamin Graham–style value rules, and a high-signal, data-dense web interface with a beginner-friendly default experience that can be gradually tuned into a full-featured professional terminal. The system includes a fully specified reference strategy with backtests and a live execution path.
+SignalOps is an open-source trading system that routes fundamentals, prediction markets, and on-chain flows through a single transparent decision engine. It is designed to handle a broad range of asset classes in depth, including equities, ETFs, futures, options, crypto, and protocol-level on-chain assets. At its core, it uses a Kimi K2.5–based research layer, Benjamin Graham–style value rules, and a high-signal, data-dense web interface with a beginner-friendly default experience that can be gradually tuned into a full-featured professional terminal. SignalOps is explicitly designed to avoid mock or synthetic market data at all stages, including local development and testing: every environment uses real historical or live data sources. The system includes a fully specified reference strategy with backtests and a live execution path.
 
 ***
 
@@ -17,7 +11,8 @@ SignalOps is a cloud-native, polyglot trading engine. Every trade decision is re
 - Real-time prediction markets and on-chain flows shape conviction, sizing, and timing.  
 - Cloudflare Workers handle deterministic execution at the edge.  
 - A reference strategy ships with full backtesting and a live integration example.  
-- The UI is designed so that complete beginners can use a simple, guided interface, while advanced users can unlock and customize full terminal-style views and tools.
+- The UI is designed so that complete beginners can use a simple, guided interface, while advanced users can unlock and customize full terminal-style views and tools.  
+- All environments (local, staging, production) are wired to real data sources; mock price feeds or synthetic ticks are not used.
 
 ***
 
@@ -39,6 +34,9 @@ SignalOps encodes an opinionated philosophy around value, events, and multi-asse
 
 - Asset-class awareness  
   Each asset class can attach its own valuation models, risk constraints, and liquidity rules. The system is designed so that an equity, an ETF, a futures contract, or a protocol token is handled through a consistent abstraction, but with class-specific logic.
+
+- Real data only  
+  All strategy logic, backtests, and local runs are built around real historical and live market data. Mock data feeds are intentionally excluded to keep behaviour and edge evaluation grounded in actual market conditions.
 
 ***
 
@@ -153,8 +151,8 @@ SignalOps uses a Cloudflare-native architecture, designed to be multi-asset from
 ### Service Topology
 
 | Service         | Language        | Hosted On           | Role                                                   | Status       |
-|:----------------|:----------------|:--------------------|:-------------------------------------------------------|:-------------|
-| Frontend        | TypeScript      | Cloudflare Pages    | Beginner-to-pro UI, dashboard, visualization, auth     | Live         |
+|----------------|-----------------|---------------------|--------------------------------------------------------|-------------|
+| Frontend       | TypeScript      | Cloudflare Pages    | Beginner-to-pro UI, dashboard, visualization, auth     | Live        |
 | Execution Core | TypeScript      | Cloudflare Workers  | API, risk, multi-asset portfolio and order management  | Live        |
 | Strategy Engine| Python          | Cloudflare Workers  | Deterministic strategy logic, backtest parity          | In progress |
 | Signal Engine  | C++ (Wasm)      | Cloudflare Workers  | Compute-intensive signal processing                    | In progress |
@@ -164,13 +162,13 @@ SignalOps uses a Cloudflare-native architecture, designed to be multi-asset from
 
 ## Backtesting and Evaluation
 
-SignalOps includes a minimal but realistic backtesting stack for the reference strategy, with an eye to multi-asset extension:
+SignalOps includes a backtesting stack for the reference strategy, with an eye to multi-asset extension and strict adherence to real data:
 
 - Historical data  
   - Price series and corporate events for the defined equity universe.  
   - Historical prediction-market time series for selected contracts.  
   - On-chain event logs for supported protocol assets.  
-  - Structure supports adding data for other asset classes as adapters are implemented.
+  - No synthetic price series or mock tick data; all backtests are run on real historical datasets.
 
 - Backtest engine  
   - Simulates the same event stream the live system would see.  
@@ -192,7 +190,8 @@ Backtest reports for the reference strategy are generated as artifacts and expos
 SignalOps is designed to move strategies from backtest to live in a controlled way:
 
 - Paper trading / sandbox mode  
-  - Uses the Execution Core to route orders to a paper or sandbox environment.  
+  - Uses the Execution Core to route orders to a paper or sandbox environment backed by real-time or delayed real market data.  
+  - No fake quotes or random-walk simulators are used; behaviour is always evaluated against real markets.  
   - Logs all decisions and fills for comparison against backtested expectations.
 
 - Live integration example  
@@ -232,14 +231,21 @@ The UI is designed to be approachable for new users while still providing the de
 - Node.js 20+  
 - Docker (for local DB/Redis)  
 - Cloudflare Wrangler (`npm install -g wrangler`)  
+- Credentials or access tokens for at least one supported real data source  
 - Optional: credentials for a supported broker/exchange sandbox
 
 ### Development (Local)
+
+Local development uses real historical and/or live data sources configured via environment variables. No mock quote generators are included.
 
 ```bash
 # Clone the repository
 git clone https://github.com/McMerger/signal-ops.git
 cd signal-ops
+
+# Configure real data connections (see docs/config examples)
+cp .env.example .env
+# Edit .env with your data provider keys and endpoints
 
 # Start everything (Frontend + Workers + DB)
 docker-compose up -d
@@ -263,7 +269,7 @@ npx wrangler dev
 
 # Python Strategy Engine
 cd python-strategy-engine
-# (Follow specific Python setup and backtest instructions)
+# (Follow specific Python setup and backtest instructions; backtests run on real historical data)
 ```
 
 ***
@@ -277,13 +283,12 @@ cd python-strategy-engine
 | `/api/v1/portfolio/positions`      | GET    | Current positions and PnL (multi-asset)                     |
 | `/api/v1/portfolio/risk`           | GET    | Risk metrics and exposure by asset and asset class          |
 | `/api/v1/portfolio/performance`    | GET    | Strategy performance metrics                                 |
-| `/api/v1/market/quotes`            | GET    | Real-time quotes (mock for local development)               |
+| `/api/v1/market/quotes`            | GET    | Real-time or delayed quotes from configured data providers  |
 | `/api/v1/research/intrinsic-value` | GET    | Intrinsic/fair value, margin of safety, class-aware flags   |
 | `/api/v1/research/prediction`      | GET    | Prediction-market summary and adjusted probabilities        |
 | `/api/v1/research/decision-tree`   | GET    | Latest decision tree for an asset or portfolio              |
 | `/api/v1/strategy/signals`         | GET    | Reference strategy signals and target weights               |
-| `/api/v1/strategy/orders`          | POST   | Submit orders via Broker Service (Paper/Live)               |
-| `/api/v1/user/preferences`         | GET/POST| Saved layouts, UI mode (Beginner/Pro), and themes           |
+| `/api/v1/strategy/orders`          | POST   | Submit strategy-generated orders for execution              |
 
 ***
 
@@ -298,7 +303,7 @@ cd python-strategy-engine
 - Docker Compose + Wrangler integration  
 - Initial Kimi K2.5 research core (fundamental and prediction-market agents)  
 - Definition and implementation of one reference strategy  
-- Basic backtest engine and reporting for the reference strategy  
+- Backtest engine and reporting for the reference strategy using real historical data  
 
 ### In Progress
 
@@ -314,4 +319,5 @@ cd python-strategy-engine
 - Mobile-friendly high-density data views  
 - Multi-tenant SaaS mode (segmented schemas)  
 - Additional reference strategies and datasets across asset classes  
-- Deeper AI support for explanations, scenario analysis, and human-in-the-loop review
+- Deeper AI support for explanations, scenario analysis, and human-in-the-loop reviewi will emphasize this again and even further: "update the backend according to updated readme"
+

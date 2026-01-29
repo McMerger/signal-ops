@@ -3,6 +3,7 @@ import { Bindings } from '../bindings';
 import { MarketDataClient } from '../clients/MarketDataClient';
 import { PolymarketClient } from '../clients/PolymarketClient';
 import { RiskService } from '../services/RiskService';
+import { BrokerFactory } from '../services/BrokerService';
 
 export class StrategyController {
     private marketClient: MarketDataClient;
@@ -152,13 +153,23 @@ export class StrategyController {
                 }, 400);
             }
 
-            // 2. Persist Order to D1
-            const orderId = crypto.randomUUID();
+            // 2. Broker Execution (New: Live Trading Path)
+            const broker = BrokerFactory.getBroker("PAPER");
+            const execution = await broker.placeOrder({
+                symbol: asset,
+                side,
+                quantity,
+                type: 'LIMIT',
+                price
+            });
+
+            // 3. Persist Order & Execution to D1
+            const orderId = execution.orderId;
             const now = new Date().toISOString();
 
             await c.env.SIGNAL_DB.prepare(`
-                INSERT INTO orders (id, strategy_name, symbol, side, quantity, price, status, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, ?)
+                INSERT INTO orders (id, strategy_name, symbol, side, quantity, price, status, execution_data, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `).bind(
                 orderId,
                 strategy_name || "MANUAL",
@@ -166,18 +177,20 @@ export class StrategyController {
                 side,
                 quantity,
                 price,
+                execution.status,
+                JSON.stringify(execution),
                 now,
                 now
             ).run();
 
-            // 3. Return Success
+            // 4. Return Success
             return c.json({
                 status: "ACCEPTED",
                 order_id: orderId,
                 received_at: now,
                 payload: body,
                 risk_check: "PASSED",
-                risk_data: riskCheck
+                execution: execution
             }, 201);
 
         } catch (e: any) {

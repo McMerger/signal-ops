@@ -4,7 +4,7 @@
 
 Event-Aware Algorithmic Trading Engine
 
-SignalOps is an open-source trading system that routes fundamentals, prediction markets, and on-chain flows through a single transparent decision engine. It is designed to handle a broad range of asset classes in depth, including equities, ETFs, futures, options, crypto, and protocol-level on-chain assets. At its core, it uses a Kimi K2.5–based research layer, Benjamin Graham–style value rules, and a high-signal, data-dense web interface. The system includes a fully specified reference strategy with backtests and a live execution path.
+SignalOps is an open-source trading system that routes fundamentals, prediction markets, and on-chain flows through a single transparent decision engine. It is designed to handle a broad range of asset classes in depth, including equities, ETFs, futures, options, crypto, and protocol-level on-chain assets. At its core, it uses a Kimi K2.5–based research layer, Benjamin Graham–style value rules, and a high-signal, data-dense web interface with a beginner-friendly default experience that can be gradually tuned into a full-featured professional terminal. The system includes a fully specified reference strategy with backtests and a live execution path.
 
 ***
 
@@ -17,7 +17,7 @@ SignalOps is a cloud-native, polyglot trading engine. Every trade decision is re
 - Real-time prediction markets and on-chain flows shape conviction, sizing, and timing.  
 - Cloudflare Workers handle deterministic execution at the edge.  
 - A reference strategy ships with full backtesting and a live integration example.  
-- The architecture is explicitly designed to extend beyond a single market or asset type, aiming at consistent handling of diverse assets with asset-class-aware logic.
+- The UI is designed so that complete beginners can use a simple, guided interface, while advanced users can unlock and customize full terminal-style views and tools.
 
 ***
 
@@ -140,7 +140,8 @@ SignalOps uses a Cloudflare-native architecture, designed to be multi-asset from
                                   ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │        FRONTEND (Cloudflare Pages, Next.js + TypeScript + Tailwind)    │
-│  • High-signal, data-dense dashboards                                  │
+│  • Beginner-friendly default dashboards                                │
+│  • Advanced, configurable terminal-style layouts for power users       │
 │  • Intrinsic value vs price / fair value per asset class               │
 │  • Prediction-market curves and flows                                  │
 │  • On-chain activity and cross-asset risk metrics                      │
@@ -153,7 +154,7 @@ SignalOps uses a Cloudflare-native architecture, designed to be multi-asset from
 
 | Service         | Language        | Hosted On           | Role                                                   | Status       |
 |----------------|-----------------|---------------------|--------------------------------------------------------|-------------|
-| Frontend       | TypeScript      | Cloudflare Pages    | Dashboard, visualization, auth                         | Live        |
+| Frontend       | TypeScript      | Cloudflare Pages    | Beginner-to-pro UI, dashboard, visualization, auth     | Live        |
 | Execution Core | TypeScript      | Cloudflare Workers  | API, risk, multi-asset portfolio and order management  | Live        |
 | Strategy Engine| Python          | Cloudflare Workers  | Deterministic strategy logic, backtest parity          | In progress |
 | Signal Engine  | C++ (Wasm)      | Cloudflare Workers  | Compute-intensive signal processing                    | In progress |
@@ -169,7 +170,7 @@ SignalOps includes a minimal but realistic backtesting stack for the reference s
   - Price series and corporate events for the defined equity universe.  
   - Historical prediction-market time series for selected contracts.  
   - On-chain event logs for supported protocol assets.  
-  - The structure allows adding data for more asset classes as adapters are implemented.
+  - Structure supports adding data for other asset classes as adapters are implemented.
 
 - Backtest engine  
   - Simulates the same event stream the live system would see.  
@@ -195,8 +196,8 @@ SignalOps is designed to move strategies from backtest to live in a controlled w
   - Logs all decisions and fills for comparison against backtested expectations.
 
 - Live integration example  
-  - The repo includes a minimal broker/exchange adapter and configuration for a single venue.  
-  - The adapter demonstrates how to connect to a live feed and send orders for at least one asset class, with a path to extend to others.
+  - Includes a minimal broker/exchange adapter and configuration for a single venue.  
+  - Shows how to connect to a live feed and send orders for at least one asset class, with a path to extend to others.
 
 - Monitoring  
   - Dashboards compare backtested vs realized performance and slippage.  
@@ -204,19 +205,23 @@ SignalOps is designed to move strategies from backtest to live in a controlled w
 
 ***
 
-## Frontend
+## Frontend and UX: From Beginner to Power User
 
-The frontend is built for clarity and inspection, with explicit multi-asset support:
+The UI is designed to be approachable for new users while still providing the depth expected by advanced traders:
 
-- Strategy cards  
-  - Summary per strategy: rules, universe, risk controls, backtest metrics, live status, and supported asset classes.
+- Beginner-friendly mode  
+  - Simple default dashboard showing portfolio, PnL, and a small set of clearly explained metrics.  
+  - Guided flows for creating and enabling strategies, with plain-language explanations of risk and behaviour.  
+  - Reduced surface area: limited controls, safe defaults, and clear confirmations for any action.
 
-- Research and decision views  
-  - For any asset or trade, show fundamentals, prediction-market signals, on-chain events, and risk constraints that led to the decision, with asset-class context.
+- Advanced / pro mode  
+  - Configurable, widget-based layouts for multiple watchlists, charts, order books, and strategy panels.  
+  - Multi-asset views, custom filters, and saved workspaces.  
+  - Deeper analytics panels (drawdowns, factor exposures, per-asset-class performance) and more direct controls.
 
-- Portfolio and risk  
-  - Current positions and exposures, broken down by asset, sector, and asset class.  
-  - Historical performance and drawdown charts at both strategy and asset-class levels.
+- Progressive disclosure  
+  - Users can start with the simplified interface and opt in to more advanced tools as they become comfortable.  
+  - The same underlying system powers both views, so there is no separate “beginner app” and “pro app”; the interface grows with the user.
 
 ***
 
@@ -287,6 +292,7 @@ cd python-strategy-engine
 
 - Migration to TypeScript Cloudflare Workers  
 - Next.js + Tailwind frontend with data-dense layout  
+- Beginner-friendly default UI layer  
 - Removal of legacy Go/Java services  
 - Docker Compose + Wrangler integration  
 - Initial Kimi K2.5 research core (fundamental and prediction-market agents)  
@@ -300,7 +306,7 @@ cd python-strategy-engine
 - Production-grade migration from local Postgres to Cloudflare D1  
 - Expanded Kimi agents for on-chain and microstructure features  
 - Hardened broker/exchange adapters and live monitoring  
-- Extending adapters and models for additional asset classes
+- Advanced terminal-style UI customisation (saved layouts, multi-monitor support)  
 
 ### Planned
 

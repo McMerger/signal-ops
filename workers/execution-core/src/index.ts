@@ -3,6 +3,7 @@ import { cors } from 'hono/cors'
 import { PortfolioController } from './controllers/PortfolioController'
 import { ResearchController } from './controllers/ResearchController'
 import { StrategyController } from './controllers/StrategyController'
+import { MarketController } from './controllers/MarketController'
 import { Bindings } from './bindings'
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -41,9 +42,14 @@ portfolio.get('/risk', (c) => portfolioController.getRiskMetrics(c))
 // Mount groups
 app.route('/api/v1/portfolio', portfolio)
 
-// Market Data Group (Stub for future migration)
+// Market Data Group
+
+// ... (imports)
+
+// Market Data Group
+const marketController = new MarketController()
 const market = new Hono<{ Bindings: Bindings }>()
-market.get('/quotes', (c) => c.json({ message: 'Market quotes (Not implemented)' }))
+market.get('/quotes', (c) => marketController.getQuote(c))
 app.route('/api/v1/market', market)
 
 // Strategy Group (Stub)

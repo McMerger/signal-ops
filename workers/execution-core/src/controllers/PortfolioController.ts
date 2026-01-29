@@ -33,8 +33,17 @@ export class PortfolioController {
                 totalUnrealizedPnL += uPnL;
                 totalRealizedPnL += rPnL;
 
+                // Simple heuristic for asset class if not in DB
+                let assetClass = 'UNKNOWN';
+                const sym = row.symbol;
+                if (['BTC', 'ETH', 'SOL'].includes(sym)) assetClass = 'CRYPTO';
+                else if (['USDT', 'USDC'].includes(sym)) assetClass = 'STABLECOIN';
+                else if (['SPY', 'QQQ'].includes(sym)) assetClass = 'ETF';
+                else assetClass = 'EQUITY';
+
                 return {
                     ...row,
+                    asset_class: assetClass,
                     market_value: (row.current_price || 0) * row.quantity
                 };
             });

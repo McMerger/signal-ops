@@ -296,17 +296,30 @@ class MultiSourceDataFeed:
     def _calculate_technical_indicators(self, market_data: Dict) -> Dict:
         """
         Calculate basic technical indicators from market data.
-
-        Note: In production, this would call TA-Lib or be calculated in Go.
-        For now, simple mock implementation.
         """
-        price = market_data.get('price', 100)
+        symbol = market_data.get('symbol', 'SPY')
+        
+        # Fetch Real History for RSI
+        # Access the yahoo adapter from the fundamentals feed
+        closes = []
+        try:
+            # We need at least 15 days for RSI 14
+            closes = self.fundamentals.yahoo.get_history(symbol, interval='1d', range='1mo')
+        except Exception:
+            pass
+            
+        if not closes or len(closes) < 15:
+            return {
+                'source': 'technical',
+                'signal': 'HOLD',
+                'confidence': 0.0,
+                'note': 'Insufficient real data for calculation'
+            }
 
-        # Mock RSI calculation (would use real price history)
-        rsi = 50 + (np.random.randn() * 15)  # Mock: normally distributed around 50
-        rsi = max(0, min(100, rsi))
-
-        # Simple signal logic
+        # Calculate Real RSI-14
+        rsi = self._calculate_rsi(closes)
+        
+        # Simple signal logic based on Real RSI
         if rsi < 30:
             signal = 'BUY'
             confidence = 0.7
@@ -322,8 +335,29 @@ class MultiSourceDataFeed:
             'rsi_14': rsi,
             'signal': signal,
             'confidence': confidence,
-            'note': 'Mock calculation - replace with real TA-Lib in production'
+            'note': 'Real RSI calculated from Yahoo Finance history'
         }
+
+    def _calculate_rsi(self, prices: List[float], period: int = 14) -> float:
+        """Standard RSI calculation."""
+        deltas = np.diff(prices)
+        seed = deltas[:period+1]
+        up = seed[seed >= 0].sum() / period
+        down = -seed[seed < 0].sum() / period
+        rs = up / down if down != 0 else 0
+        rsi = 100 - (100 / (1 + rs))
+
+        for delta in deltas[period+1:]:
+            up_val = delta if delta > 0 else 0
+            down_val = -delta if delta < 0 else 0
+            
+            up = (up * (period - 1) + up_val) / period
+            down = (down * (period - 1) + down_val) / period
+            
+            rs = up / down if down != 0 else 0
+            rsi = 100 - (100 / (1 + rs))
+            
+        return rsi
 
     def _is_crypto(self, symbol: str) -> bool:
         """Check if symbol is a cryptocurrency."""

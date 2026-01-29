@@ -11,7 +11,7 @@ async def on_fetch(request, env):
     method = request.method
     
     # Initialize evaluator (singleton)
-    evaluator = get_evaluator(use_mock=True) # Mock data for now until D1 binding
+    evaluator = get_evaluator(use_mock=False) # Strict Real Data Only per README
 
     if method == "GET" and url.endswith("/evaluate"):
         # Default Graham evaluation

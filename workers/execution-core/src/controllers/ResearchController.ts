@@ -90,11 +90,12 @@ export class ResearchController {
             // 1. Fetch Real Data with Keys
             const marketClient = new MarketDataClient(c.env.ALPHA_VANTAGE_KEY);
             const onChainClient = new OnChainClient(c.env.ETHERSCAN_API_KEY);
+            const eventService = new EventService(c.env.ALPHA_VANTAGE_KEY);
 
             const [quote, fund, events, flows] = await Promise.all([
                 marketClient.getQuote(symbol),
                 marketClient.getFundamentals(symbol),
-                new EventService().getBlockingEvents(symbol),
+                eventService.getBlockingEvents(symbol), // Real Events
                 onChainClient.getNetworkFlows(symbol)
             ]);
 

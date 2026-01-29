@@ -32,7 +32,7 @@ export class StrategyController {
                         this.marketClient.getQuote(symbol),
                         this.marketClient.getFundamentals(symbol),
                         this.polyClient.getMarketForAsset(symbol).catch(() => null),
-                        new EventService().getBlockingEvents(symbol) // New: Check for blockers
+                        new EventService(c.env.ALPHA_VANTAGE_KEY).getBlockingEvents(symbol) // Real Events
                     ]);
 
                     // 0. Event Block Check (Safety First)

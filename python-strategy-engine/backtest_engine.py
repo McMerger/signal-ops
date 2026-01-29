@@ -58,7 +58,7 @@ class BacktestEngine:
             initial_capital: Starting capital in USD
         """
         self.initial_capital = initial_capital
-        self.evaluator = StrategyEvaluator(use_mock=True)  # Use mock data for backtest
+        self.evaluator = StrategyEvaluator(use_mock=False)  # Strict Real Data
         logger.info(f"Backtest engine initialized with ${initial_capital:,.2f}")
     
     def run_backtest(

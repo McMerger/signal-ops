@@ -6,7 +6,7 @@ export type Bindings = {
     SIGNAL_DB: D1Database;
 
     // Wasm Modules
-    SIGNAL_CORE: WebAssembly.Module;
+    SIGNAL_CORE?: WebAssembly.Module;
 
     // Service Bindings
     STRATEGY_ENGINE: Fetcher;

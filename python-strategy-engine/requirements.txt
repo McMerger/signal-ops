@@ -16,8 +16,8 @@ protobuf>=5.26.0
 # Configuration management
 pyyaml>=6.0.1
 
-# Google Gemini (for LLM explanations)
-google-genai>=0.3.0
+# OpenAI (for Kimi K2.5 / Moonshot)
+openai>=1.0.0
 
 # Data fetching
 yfinance>=0.2.28

@@ -24,6 +24,11 @@ async def on_fetch(request, env):
             strategy_name = body.get("strategy", "graham")
             asset = body.get("asset", "BTC")
             market_data = body.get("market_data", {})
+            asset_class = body.get("asset_class", None)
+            
+            # Inject asset class into market data context
+            if asset_class:
+                market_data['asset_class'] = asset_class
             
             evaluation = evaluator.evaluate_strategy(strategy_name, asset, market_data)
             

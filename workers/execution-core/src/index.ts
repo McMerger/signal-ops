@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { PortfolioController } from './controllers/PortfolioController'
 import { ResearchController } from './controllers/ResearchController'
+import { StrategyController } from './controllers/StrategyController'
 import { Bindings } from './bindings'
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -40,10 +41,12 @@ market.get('/quotes', (c) => c.json({ message: 'Market quotes (Not implemented)'
 app.route('/api/v1/market', market)
 
 // Strategy Group (Stub)
-// Strategies Group
-const strategies = new Hono<{ Bindings: Bindings }>()
-strategies.get('/', (c) => c.json({ message: 'Active strategies (Not implemented)' }))
-app.route('/api/v1/strategies', strategies)
+// Strategy Group
+const strategyController = new StrategyController()
+const strategy = new Hono<{ Bindings: Bindings }>()
+strategy.get('/signals', (c) => strategyController.getSignals(c))
+strategy.post('/orders', (c) => strategyController.submitOrder(c))
+app.route('/api/v1/strategy', strategy)
 
 // Research Group (New)
 const researchController = new ResearchController()

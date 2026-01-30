@@ -10,6 +10,19 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: "font-src 'self' github.githubassets.com https://r2cdn.perplexity.ai;",
+          },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     // SCORCHED EARTH: Hardcoded Production URL
     // We explicitly ignore process.env.NEXT_PUBLIC_API_URL to prevents defaults to localhost

@@ -40,19 +40,11 @@ export function DashboardView() {
     const { mode } = useAppStore();
     const { isConnected, lastMessage } = useWebSocket({ url: 'ws://localhost:8080/ws' });
     const [dashboardData, setDashboardData] = useState({
-        totalBalance: 124592.00,
-        balanceChange: 2.5,
-        activePositions: 3,
-        volume24h: 1200000,
-        chartData: [
-            { time: '00:00', value: 4000 },
-            { time: '04:00', value: 3000 },
-            { time: '08:00', value: 2000 },
-            { time: '12:00', value: 2780 },
-            { time: '16:00', value: 1890 },
-            { time: '20:00', value: 2390 },
-            { time: '24:00', value: 3490 },
-        ]
+        totalBalance: 0,
+        balanceChange: 0,
+        activePositions: 0,
+        volume24h: 0,
+        chartData: []
     });
 
     useEffect(() => {
@@ -226,36 +218,8 @@ export function DashboardView() {
                             <GlassCard className="p-6 h-full">
                                 <h3 className="text-sm font-mono text-zinc-400 tracking-wider mb-6">RECENT_ACTIVITY</h3>
                                 <div className="space-y-4">
-                                    <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:border-emerald-500/30 transition-colors group">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-8 w-8 rounded bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500/20 transition-colors">
-                                                <ArrowUpRight className="h-4 w-4" />
-                                            </div>
-                                            <div>
-                                                <div className="text-sm font-bold text-white font-mono">BUY BTC</div>
-                                                <div className="text-[10px] text-zinc-500 font-mono uppercase">Strategy: Momentum</div>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-sm font-bold text-white font-mono">0.05 BTC</div>
-                                            <div className="text-[10px] text-zinc-500 font-mono">2m ago</div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:border-emerald-500/30 transition-colors group">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-8 w-8 rounded bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500/20 transition-colors">
-                                                <ArrowUpRight className="h-4 w-4" />
-                                            </div>
-                                            <div>
-                                                <div className="text-sm font-bold text-white font-mono">BUY ETH</div>
-                                                <div className="text-[10px] text-zinc-500 font-mono uppercase">Strategy: Arbitrage</div>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-sm font-bold text-white font-mono">1.2 ETH</div>
-                                            <div className="text-[10px] text-zinc-500 font-mono">15m ago</div>
-                                        </div>
+                                    <div className="text-center py-8 text-xs text-zinc-600 font-mono">
+                                        NO RECENT EXECUTION DETECTED
                                     </div>
                                 </div>
                             </GlassCard>
@@ -266,26 +230,13 @@ export function DashboardView() {
                         {/* Deep Dive Section: Decision Tree & On-Chain (Pro Only) */}
                         <motion.div variants={item} className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-6">
                             <DecisionTreeCard
-                                asset="BTC-USD"
-                                decision="BUY"
-                                rules={[
-                                    { name: "Intrinsic Val > Price", passed: true, value: "$65k", threshold: "$62k" },
-                                    { name: "Prediction Mkt > 60%", passed: true, value: "0.65", threshold: "0.60" },
-                                    { name: "On-Chain Outflows", passed: false, value: "-$10M", threshold: "-$50M" }
-                                ]}
+                                asset="WAITING_SIGNAL"
+                                decision="--"
+                                rules={[]}
                             />
-                            <OnChainMetricCard
-                                protocol="AAVE"
-                                tvl="$12.4B"
-                                flows24h="+$45M"
-                                unlockDate="2026-03-12"
-                            />
-                            <OnChainMetricCard
-                                protocol="UNISWAP"
-                                tvl="$6.2B"
-                                flows24h="-$12M"
-                                unlockDate="No lock"
-                            />
+                            <div className="col-span-2 text-center py-12 border border-white/5 rounded-lg bg-white/5 text-zinc-500 font-mono text-xs">
+                                WAITING FOR LIVE RESEARCH DATA (ON_CHAIN / PREDICTION)
+                            </div>
                         </motion.div>
 
                         <motion.div variants={item}>

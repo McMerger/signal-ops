@@ -1,6 +1,8 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const isProduction = process.env.NODE_ENV === 'production';
+const PRODUCTION_API_URL = 'https://execution-core.cortesmailles01.workers.dev';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (isProduction ? PRODUCTION_API_URL : 'http://localhost:8080');
 
 class APIClient {
     private client: AxiosInstance;

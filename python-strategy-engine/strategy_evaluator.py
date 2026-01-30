@@ -12,6 +12,8 @@ from openai import OpenAI  # Kimi is OpenAI-compatible
 from agents.base_agent import BaseAgent
 from agents.FundamentalAgent import FundamentalAgent
 from agents.PredictionMarketAgent import PredictionMarketAgent
+from agents.OnChainAgent import OnChainAgent
+from agents.RiskPolicyAgent import RiskPolicyAgent
 from agents.trend_follower import TrendFollowerAgent
 from market_data.multi_source_feed import MultiSourceDataFeed
 

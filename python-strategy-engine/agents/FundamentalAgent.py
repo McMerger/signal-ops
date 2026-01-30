@@ -23,7 +23,7 @@ from typing import Dict, Optional
 from datetime import datetime
 
 
-class GrahamDefensiveStrategy(BaseAgent):
+class FundamentalAgent(BaseAgent):
     """
     Benjamin Graham's defensive value investing + event-aware filtering.
 

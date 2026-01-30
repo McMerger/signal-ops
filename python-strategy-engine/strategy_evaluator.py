@@ -10,8 +10,8 @@ from enum import Enum
 from openai import OpenAI  # Kimi is OpenAI-compatible
 
 from agents.base_agent import BaseAgent
-from agents.graham_defensive import GrahamDefensiveStrategy
-from agents.event_driven_agent import EventDrivenAgent
+from agents.FundamentalAgent import FundamentalAgent
+from agents.PredictionMarketAgent import PredictionMarketAgent
 from agents.trend_follower import TrendFollowerAgent
 from market_data.multi_source_feed import MultiSourceDataFeed
 
@@ -75,8 +75,8 @@ class StrategyEvaluator:
         
         # Initialize agents
         self.agents: Dict[str, BaseAgent] = {
-            'graham': GrahamDefensiveStrategy("Graham"),
-            'event_driven': EventDrivenAgent("EventDriven"),
+            'graham': FundamentalAgent("Graham", initial_capital=100000),
+            'event_driven': PredictionMarketAgent("EventDriven"),
             'trend_follower': TrendFollowerAgent("TrendFollower"),
         }
         

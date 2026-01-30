@@ -6,7 +6,7 @@ from typing import Dict, Optional
 from agents.base_agent import BaseAgent, Signal
 
 
-class EventDrivenAgent(BaseAgent):
+class PredictionMarketAgent(BaseAgent):
     """
     Strategy:
     - Monitor key event markets (Fed rates, elections, macro)

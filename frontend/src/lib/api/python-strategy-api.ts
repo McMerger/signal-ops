@@ -1,11 +1,16 @@
 import axios, { AxiosRequestConfig } from 'axios';
 
 const getApiUrl = () => {
-    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+    // Priority 1: Runtime Prod Check
+    if (typeof window !== 'undefined' && (window.location.hostname === 'signal-ops.pages.dev' || window.location.hostname.endsWith('pages.dev'))) {
+        return 'https://execution-core.cortesmailles01.workers.dev';
+    }
+    // Priority 2: Generic Non-Localhost
     if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
         return 'https://execution-core.cortesmailles01.workers.dev';
     }
-    return 'http://localhost:8080';
+    // Priority 3: Env Var or Localhost
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 };
 const API_BASE_URL = getApiUrl();
 

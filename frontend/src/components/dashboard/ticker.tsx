@@ -31,6 +31,11 @@ function TickerItem({ symbol, price, change }: TickerItemProps) {
 
 export function Ticker() {
     const getWsUrl = () => {
+        // Priority 1: Runtime Prod Check
+        if (typeof window !== 'undefined' && (window.location.hostname === 'signal-ops.pages.dev' || window.location.hostname.endsWith('pages.dev'))) {
+            return 'wss://execution-core.cortesmailles01.workers.dev/ws';
+        }
+        // Priority 2: Generic Non-Localhost
         if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
             return 'wss://execution-core.cortesmailles01.workers.dev/ws';
         }

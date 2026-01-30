@@ -11,9 +11,8 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   async rewrites() {
-    const isProduction = process.env.NODE_ENV === 'production';
-    const PRODUCTION_API_URL = 'https://execution-core.cortesmailles01.workers.dev';
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || (isProduction ? PRODUCTION_API_URL : "http://localhost:8080");
+    // Default to Production URL if env var is missing (Safest for Cloudflare)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://execution-core.cortesmailles01.workers.dev";
     return [
       {
         source: "/api/:path*",

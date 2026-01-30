@@ -18,15 +18,12 @@ export function RealTimeTradeFeed() {
     const [trades, setTrades] = useState<Trade[]>([]);
 
     const getWsUrl = () => {
-        // Priority 1: Runtime Prod Check
-        if (typeof window !== 'undefined' && (window.location.hostname === 'signal-ops.pages.dev' || window.location.hostname.endsWith('pages.dev'))) {
-            return 'wss://execution-core.cortesmailles01.workers.dev/ws';
+        // 1. Explicit Localhost Detection
+        if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+            return process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080/ws';
         }
-        // Priority 2: Generic Non-Localhost
-        if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-            return 'wss://execution-core.cortesmailles01.workers.dev/ws';
-        }
-        return process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080/ws';
+        // 2. Default to Production
+        return 'wss://execution-core.cortesmailles01.workers.dev/ws';
     };
 
     const { isConnected } = useWebSocket({

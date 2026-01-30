@@ -25,6 +25,7 @@ import {
 const MotionLink = motion(Link);
 
 import { useAuth } from "@/context/auth-context";
+import { useAppStore } from "@/lib/store";
 
 const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: House },

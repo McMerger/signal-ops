@@ -1,41 +1,26 @@
 "use client";
 
-// HolographicGlobe removed
-
-import { motion } from "framer-motion";
+import { GlassCard } from "@/components/ui/glass-card";
 
 export default function MarketPage() {
     return (
-        <div className="container mx-auto p-8 space-y-8">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-            >
-                <h1 className="text-3xl font-bold tracking-tight text-white font-mono">
-                    MARKET<span className="text-sky-500">_INTEL</span>
-                </h1>
-                <p className="text-zinc-400 font-mono mt-1">Global Liquidity Flows & Geolocation</p>
-            </motion.div>
-
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 }}
-            >
-                {/* WebGL component removed */}
-
-            </motion.div>
-
-            <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-zinc-900/50 border border-white/10 rounded-lg flex justify-between items-center">
-                    <span className="text-zinc-400 text-sm font-mono">LONDON_SESSION</span>
-                    <span className="text-emerald-500 text-xs font-mono bg-emerald-500/10 px-2 py-1 rounded">ACTIVE</span>
-                </div>
-                <div className="p-4 bg-zinc-900/50 border border-white/10 rounded-lg flex justify-between items-center">
-                    <span className="text-zinc-400 text-sm font-mono">NEW_YORK_SESSION</span>
-                    <span className="text-rose-500 text-xs font-mono bg-rose-500/10 px-2 py-1 rounded">CLOSED</span>
-                </div>
+        <div className="container mx-auto p-8 space-y-6">
+            <h1 className="text-2xl font-bold text-white font-mono">MARKET_INTELLIGENCE</h1>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <GlassCard className="p-6 col-span-2">
+                    <h3 className="text-sm text-zinc-400 font-mono mb-4">GLOBAL_LIQUIDITY_MAP</h3>
+                    <div className="h-64 border border-white/5 rounded flex items-center justify-center text-zinc-600 font-mono">
+                        [HEATMAP_VISUALIZATION]
+                    </div>
+                </GlassCard>
+                <GlassCard className="p-6">
+                    <h3 className="text-sm text-zinc-400 font-mono mb-4">SECTOR_FLOWS</h3>
+                    <div className="space-y-2 font-mono text-sm">
+                        <div className="flex justify-between"><span className="text-zinc-300">L1_CHAINS</span> <span className="text-emerald-400">+4.2%</span></div>
+                        <div className="flex justify-between"><span className="text-zinc-300">DEFI</span> <span className="text-emerald-400">+1.8%</span></div>
+                        <div className="flex justify-between"><span className="text-zinc-300">GAMING</span> <span className="text-rose-400">-0.5%</span></div>
+                    </div>
+                </GlassCard>
             </div>
         </div>
     );

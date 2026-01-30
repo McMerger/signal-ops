@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowingChart } from "@/components/dashboard/glowing-chart";
 import { Download, Spinner } from "@phosphor-icons/react";
+import { FactorExposureCard } from "@/components/research/factor-exposure";
 
 interface BacktestData {
     summary: {
@@ -116,21 +117,7 @@ export default function BacktestPage() {
                     </div>
                 </GlassCard>
 
-                <GlassCard className="p-6">
-                    <h3 className="text-sm font-mono text-zinc-400 tracking-wider mb-4">DEPLOYMENT_STATUS</h3>
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20 text-amber-500 font-bold text-xs p-2 text-center">
-                            PAPER
-                        </div>
-                        <div>
-                            <div className="text-white font-bold font-mono">Sandbox Environment</div>
-                            <div className="text-xs text-zinc-500">Live Data / Virtual Execution</div>
-                        </div>
-                    </div>
-                    <div className="text-xs text-zinc-500 font-mono border-t border-white/5 pt-3">
-                        To promote to Live Trading, ensure Realized Slippage {'<'} 5.0bps for 7 consecutive days.
-                    </div>
-                </GlassCard>
+                <FactorExposureCard />
             </div>
 
             <div className="space-y-4">

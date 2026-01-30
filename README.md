@@ -1,4 +1,53 @@
-SignalOps is an open-source trading system that routes fundamentals, prediction markets, and on-chain flows through a single transparent decision engine. It is designed to handle a broad range of asset classes in depth, including equities, ETFs, futures, options, crypto, and protocol-level on-chain assets. At its core, it uses a Kimi K2.5–based research layer, Benjamin Graham–style value rules, and a high-signal, data-dense web interface with a beginner-friendly default experience that can be gradually tuned into a full-featured professional terminal. SignalOps is explicitly designed to avoid mock or synthetic market data at all stages, including local development and testing: every environment uses real historical or live data sources. The system includes a fully specified reference strategy with backtests and a live execution path.
+***
+
+# SignalOps Terminal
+
+Event-Aware Algorithmic Trading Engine
+
+SignalOps is an open-source trading system that routes fundamentals, prediction markets, and on-chain flows through a single transparent decision engine. It is designed to handle a broad range of asset classes in depth, including equities, ETFs, futures, options, crypto, and protocol-level on-chain assets. At its core, it uses a Kimi K2.5–based research layer, Benjamin Graham–style value rules, and a high-signal, data-dense web interface with a beginner-friendly default experience that can be gradually tuned into a full-featured professional terminal.
+
+SignalOps is **not** yet a production-grade, capital-proven trading platform. It is a serious experimental framework and reference implementation for multi-asset, AI-assisted trading research and execution. Using it with significant real capital requires additional engineering, validation, and operational work beyond what is included here.
+
+***
+
+## What SignalOps Is (and Is Not)
+
+To be explicit:
+
+SignalOps **is**:
+
+- A modern, multi-asset, cloud-native architecture for event-aware trading.  
+- A playground for integrating a Kimi K2.5 research layer with real fundamentals, prediction markets, and on-chain data.  
+- A reference implementation of one fully specified strategy, with backtests and an example live integration path.  
+- A starting point for engineers and quants who want to build their own production stack.
+
+SignalOps is **not yet**:
+
+- A regulator-ready, broker-certified trading platform.  
+- A system with multiple years of audited live performance or third-party verification.  
+- A turnkey tool you should trust with large, unsupervised, real-money portfolios.  
+- A replacement for institutional OMS/EMS platforms or fully mature retail brokers.
+
+You should treat this project as a **research and prototyping environment**, not as an off-the-shelf solution for serious, unattended live trading.
+
+***
+
+## Safety and Risk Disclaimer
+
+SignalOps is experimental software. It comes with no performance guarantees and no uptime guarantees.
+
+- You are responsible for:
+  - Deciding whether to connect it to any broker or exchange.  
+  - Setting and supervising all risk limits.  
+  - Monitoring positions and system behaviour in real time.
+
+- Known limitations:
+  - Limited exchange/broker integrations out of the box.  
+  - Limited set of reference strategies and datasets.  
+  - No formal stress testing under extreme market conditions.  
+  - No guarantees around data provider outages, API changes, or latency spikes.
+
+If you use SignalOps with real funds, start with very small size, treat it as a supervised experiment, and expect to build additional tooling, monitoring, and safeguards.
 
 ***
 
@@ -10,9 +59,9 @@ SignalOps is a cloud-native, polyglot trading engine. Every trade decision is re
 - Graham-style intrinsic value rules determine what is investable on the fundamental side.  
 - Real-time prediction markets and on-chain flows shape conviction, sizing, and timing.  
 - Cloudflare Workers handle deterministic execution at the edge.  
-- A reference strategy ships with full backtesting and a live integration example.  
+- A reference strategy ships with backtesting and an example live integration path.  
 - The UI is designed so that complete beginners can use a simple, guided interface, while advanced users can unlock and customize full terminal-style views and tools.  
-- All environments (local, staging, production) are wired to real data sources; mock price feeds or synthetic ticks are not used.
+- All environments (local, staging, production) are wired to real data sources; mock price feeds or synthetic ticks are intentionally excluded.
 
 ***
 
@@ -61,7 +110,7 @@ The repository ships with a reference strategy as a concrete example. It focuses
   - Positions are trimmed or closed when the margin of safety closes, risk constraints are hit, or asset-class-specific constraints trigger.  
   - Periodic rebalance reconciles actual weights to target weights across the full set of supported assets, with turnover and cost controls.
 
-The reference implementation is kept small enough to run and understand easily, but the code structure is meant to be extended to additional asset classes.
+The reference implementation is kept small enough to run and understand easily, but the code structure is meant to be extended to additional asset classes and additional strategies.
 
 ***
 
@@ -83,7 +132,7 @@ The research and orchestration layer, built around Kimi K2.5, sits above the Wor
 - Policy and risk  
   A dedicated risk and policy layer enforces margin-of-safety and exposure limits, with room for per-asset-class constraints (e.g., leverage limits for derivatives, position caps for illiquid tokens).
 
-Kimi generates research and proposals that reflect the breadth and depth of supported asset types; execution is performed only via deterministic, testable rules.
+Kimi generates research and proposals; all actual orders are generated by deterministic, testable rules that you can inspect and modify.
 
 ***
 
@@ -96,7 +145,7 @@ Prediction markets are treated as a first-class, testable signal across multiple
   - Liquidity, spread, and recent order flow are tracked as features.
 
 - Bias-aware logic  
-  - The strategy can apply category-specific adjustments and different treatments depending on the asset class or event type a market references.
+  - Strategies can apply category-specific adjustments and different treatments depending on the asset class or event type a market references.
 
 - Role in the strategy  
   - Prediction markets primarily influence conviction and position sizing across the portfolio.  
@@ -148,16 +197,6 @@ SignalOps uses a Cloudflare-native architecture, designed to be multi-asset from
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Service Topology
-
-| Service         | Language        | Hosted On           | Role                                                   | Status      |
-|-----------------|-----------------|---------------------|--------------------------------------------------------|-------------|
-| Frontend        | TypeScript      | Cloudflare Pages    | Beginner-to-pro UI, dashboard, visualization, auth     | Live        |
-| Execution Core  | TypeScript      | Cloudflare Workers  | API, risk, multi-asset portfolio and order management  | Live        |
-| Strategy Engine | Python          | Cloudflare Workers  | Deterministic strategy logic, backtest parity          | In progress |
-| Signal Engine   | C++ (Wasm)      | Cloudflare Workers  | Compute-intensive signal processing                    | In progress |
-| Research Core   | Kimi K2.5       | External / managed  | Long-context research, orchestration, policy           | Initial     |
-
 ***
 
 ## Backtesting and Evaluation
@@ -181,26 +220,29 @@ SignalOps includes a backtesting stack for the reference strategy, with an eye t
   - Turnover, hit rate, average win/loss.  
   - Exposure by asset, sector, and asset class.
 
-Backtest reports for the reference strategy are generated as artifacts and exposed in the UI and docs.
+Backtest reports for the reference strategy are generated as artifacts and exposed in the UI and docs. They are not audited and should be treated as research results, not as promises of future performance.
 
 ***
 
-## Live Trading Path
+## Live Trading Path (Experimental)
 
-SignalOps is designed to move strategies from backtest to live in a controlled way:
+SignalOps is designed to move strategies from backtest to live in a controlled way, but this path is experimental and not a finished product.
 
 - Paper trading / sandbox mode  
   - Uses the Execution Core to route orders to a paper or sandbox environment backed by real-time or delayed real market data.  
-  - No fake quotes or random-walk simulators are used; behaviour is always evaluated against real markets.  
-  - Logs all decisions and fills for comparison against backtested expectations.
+  - Logs all decisions and fills for comparison against backtested expectations.  
+  - Intended for evaluation and debugging, not for production-scale capital.
 
-- Live integration example  
+- Example live integration  
   - Includes a minimal broker/exchange adapter and configuration for a single venue.  
-  - Shows how to connect to a live feed and send orders for at least one asset class, with a path to extend to others.
+  - Shows how to connect to a live feed and send orders for at least one asset class.  
+  - This adapter is a reference implementation, not a certified production connector.
 
-- Monitoring  
-  - Dashboards compare backtested vs realized performance and slippage.  
-  - All decisions are logged, along with decision trees and research context, across asset types.
+- Monitoring (baseline)  
+  - Basic dashboards compare backtested vs realized performance and slippage.  
+  - Decisions are logged, along with decision trees and research context, across asset types.
+
+If you decide to run SignalOps live, keep allocations small, monitor it closely, and plan to build your own production-grade adapters, monitoring, and failover logic.
 
 ***
 
@@ -220,7 +262,7 @@ The UI is designed to be approachable for new users while still providing the de
 
 - Progressive disclosure  
   - Users can start with the simplified interface and opt in to more advanced tools as they become comfortable.  
-  - The same underlying system powers both views, so there is no separate “beginner app” and “pro app”; the interface grows with the user.
+  - The same underlying system powers both views; there is no separate “beginner app” and “pro app”.
 
 ***
 
@@ -254,51 +296,14 @@ docker-compose up -d
 docker-compose logs -f execution-core
 ```
 
-### Manual Service Start
-
-```bash
-# Frontend
-cd frontend
-npm install
-npm run dev
-
-# Execution Core (Worker)
-cd workers/execution-core
-npm install
-npx wrangler dev
-
-# Python Strategy Engine
-cd python-strategy-engine
-# (Follow specific Python setup and backtest instructions; backtests run on real historical data)
-```
-
 ***
 
-## API Reference
-
-### Execution Core (Port 8787)
-
-| Endpoint                           | Method | Description                                                  |
-|------------------------------------|--------|--------------------------------------------------------------|
-| `/api/v1/portfolio/positions`      | GET    | Current positions and PnL (multi-asset)                     |
-| `/api/v1/portfolio/risk`           | GET    | Risk metrics and exposure by asset and asset class          |
-| `/api/v1/portfolio/performance`    | GET    | Strategy performance metrics                                 |
-| `/api/v1/market/quotes`            | GET    | Real-time or delayed quotes from configured data providers  |
-| `/api/v1/research/intrinsic-value` | GET    | Intrinsic/fair value, margin of safety, class-aware flags   |
-| `/api/v1/research/prediction`      | GET    | Prediction-market summary and adjusted probabilities        |
-| `/api/v1/research/decision-tree`   | GET    | Latest decision tree for an asset or portfolio              |
-| `/api/v1/strategy/signals`         | GET    | Reference strategy signals and target weights               |
-| `/api/v1/strategy/orders`          | POST   | Submit strategy-generated orders for execution              |
-
-***
-
-## Roadmap
+## Roadmap (Honest Version)
 
 ### Completed
 
-- Migration to TypeScript Cloudflare Workers  
-- Next.js + Tailwind frontend with data-dense layout  
-- Beginner-friendly default UI layer  
+- Cloud-native, multi-asset architecture (Workers + Python + Wasm)  
+- Next.js + Tailwind frontend with beginner and advanced views  
 - Removal of legacy Go/Java services  
 - Docker Compose + Wrangler integration  
 - Initial Kimi K2.5 research core (fundamental and prediction-market agents)  
@@ -311,12 +316,16 @@ cd python-strategy-engine
 - C++ order-book and signal logic compiled to Wasm  
 - Production-grade migration from local Postgres to Cloudflare D1  
 - Expanded Kimi agents for on-chain and microstructure features  
-- Hardened broker/exchange adapters and live monitoring  
-- Advanced terminal-style UI customisation (saved layouts, multi-monitor support)  
+- Hardened broker/exchange adapters and better live monitoring  
+- More polished pro-level UI features (saved layouts, multi-monitor workflows)  
 
-### Planned
+### Not Done Yet (But Needed for Serious Money)
 
-- Mobile-friendly high-density data views  
-- Multi-tenant SaaS mode (segmented schemas)  
-- Additional reference strategies and datasets across asset classes  
-- Deeper AI support for explanations, scenario analysis, and human-in-the-loop reviewi will emphasize this again and even further: "update the backend according to updated readme"
+- Multiple independent broker and exchange integrations  
+- A small catalog of robust, fully tested strategies  
+- Long, transparent live and paper-live track records  
+- Formal stress testing across extreme market events  
+- Compliance, audit trails, and operational runbooks  
+- Third-party or institutional validation of strategies and infrastructure
+
+Until those “not done yet” items are addressed, SignalOps should be treated as an advanced, open-source research and prototyping platform—not as a finished, production trading system for large, unsupervised capital.

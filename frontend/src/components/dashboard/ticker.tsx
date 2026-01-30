@@ -33,30 +33,20 @@ export function Ticker() {
     const { lastMessage, subscribe } = useWebSocket({ url: 'ws://localhost:8080/ws' });
     const [activeList, setActiveList] = useState<'crypto' | 'macro' | 'prediction'>('crypto');
 
+    const [activeList, setActiveList] = useState<'crypto' | 'macro' | 'prediction'>('crypto');
+    const [prices, setPrices] = useState<Record<string, { price: number; change: number }>>({});
+
+    // Watchlist configuration (Symbols only)
     const watchlists = {
-        crypto: {
-            "BTC/USDT": { price: 94230.50, change: 2.5 },
-            "ETH/USDT": { price: 4820.10, change: -1.2 },
-            "SOL/USDT": { price: 145.20, change: 5.8 },
-        },
-        macro: {
-            "SPX": { price: 5200.50, change: 0.8 },
-            "NDX": { price: 18200.10, change: 1.2 },
-            "GOLD": { price: 2450.20, change: -0.5 },
-            "DXY": { price: 104.20, change: 0.1 },
-        },
-        prediction: {
-            "TRUMP_WIN": { price: 0.52, change: 5.0 },
-            "FED_CUT": { price: 0.75, change: -2.0 },
-            "RECESSION_25": { price: 0.22, change: 1.0 },
-        }
+        crypto: ["BTC/USDT", "ETH/USDT", "SOL/USDT"],
+        macro: ["SPX", "NDX", "GOLD", "DXY"],
+        prediction: ["TRUMP_WIN", "FED_CUT", "RECESSION_25"]
     };
 
-    const [prices, setPrices] = useState(watchlists.crypto);
-
-    useEffect(() => {
-        setPrices(watchlists[activeList]);
-    }, [activeList]);
+    // Filter prices based on active list
+    const visiblePrices = Object.entries(prices).filter(([symbol]) =>
+        watchlists[activeList].includes(symbol)
+    );
 
     useEffect(() => {
         if (lastMessage?.type === 'market_data' && lastMessage.data) {
@@ -85,14 +75,18 @@ export function Ticker() {
                 ))}
             </div>
             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide border-b border-white/5">
-                {Object.entries(prices).map(([symbol, data]) => (
-                    <TickerItem
-                        key={symbol}
-                        symbol={symbol}
-                        price={data.price}
-                        change={data.change}
-                    />
-                ))}
+                {visiblePrices.length === 0 ? (
+                    <div className="text-xs text-zinc-500 font-mono py-2 px-1">WAITING_FOR_DATA...</div>
+                ) : (
+                    visiblePrices.map(([symbol, data]) => (
+                        <TickerItem
+                            key={symbol}
+                            symbol={symbol}
+                            price={data.price}
+                            change={data.change}
+                        />
+                    ))
+                )}
             </div>
         </div>
     );

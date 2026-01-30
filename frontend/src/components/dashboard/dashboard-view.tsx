@@ -177,10 +177,7 @@ export function DashboardView() {
                         </div>
                     </GlassCard>
 
-                    const [researchData, setResearchData] = useState<{
-        intrinsic: any[];
-                    predictions: any[];
-    }>({intrinsic: [], predictions: [] });
+
 
     useEffect(() => {
         // Poll for Research Data (Beginner Mode Feeds)

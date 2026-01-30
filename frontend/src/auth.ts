@@ -55,8 +55,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     debug: true,
     providers: [
         GitHub({
-            clientId: process.env.AUTH_GITHUB_ID?.replace(/"/g, ""),
-            clientSecret: process.env.AUTH_GITHUB_SECRET?.replace(/"/g, ""),
+            clientId: "Ov23liC9xRAz99B7zPpd",
+            clientSecret: "89bb4af9edbf4196c66b3c76e3578dfa93c61f95",
         })
     ],
     callbacks: {

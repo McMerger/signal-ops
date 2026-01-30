@@ -18,6 +18,7 @@ import { PredictionMarketCard } from "@/components/research/prediction-market";
 import { DecisionTreeCard } from "@/components/research/decision-tree";
 import { OnChainMetricCard } from "@/components/research/on-chain-metric";
 import { AnalyticsPanel } from "@/components/dashboard/analytics-panel";
+import { OrderBookWidget } from "@/components/dashboard/order-book";
 // StatusOrb removed
 
 const container = {
@@ -258,6 +259,8 @@ export function DashboardView() {
                                     </div>
                                 </div>
                             </GlassCard>
+
+                            <OrderBookWidget />
                         </motion.div>
 
                         {/* Deep Dive Section: Decision Tree & On-Chain (Pro Only) */}

@@ -29,7 +29,7 @@ function WelcomeContent() {
                     </h1>
                     <p className="text-xl text-zinc-600 max-w-2xl mb-10 font-medium">
                         Institutional-grade algorithmic execution. <br />
-                        <span className="text-blue-600 font-bold">Go</span> speed. <span className="text-amber-600 font-bold">Python</span> intelligence.
+                        <span className="text-blue-600 font-bold">Edge</span> speed. <span className="text-amber-600 font-bold">Python</span> intelligence.
                     </p>
                     <button
                         onClick={handleLaunch}

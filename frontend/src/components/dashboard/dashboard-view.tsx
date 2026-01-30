@@ -17,6 +17,7 @@ import { IntrinsicValueCard } from "@/components/research/intrinsic-value";
 import { PredictionMarketCard } from "@/components/research/prediction-market";
 import { DecisionTreeCard } from "@/components/research/decision-tree";
 import { OnChainMetricCard } from "@/components/research/on-chain-metric";
+import { AnalyticsPanel } from "@/components/dashboard/analytics-panel";
 // StatusOrb removed
 
 const container = {
@@ -106,10 +107,12 @@ export function DashboardView() {
                                         QUICK_TRADE
                                     </Button>
                                 </Link>
-                                <Button className="gap-2 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/50 hover:border-sky-400 font-mono shadow-[0_0_15px_rgba(14,165,233,0.3)]">
-                                    <Pulse className="h-4 w-4" />
-                                    NEW_STRATEGY
-                                </Button>
+                                <Link href="/strategies/create">
+                                    <Button className="gap-2 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/50 hover:border-sky-400 font-mono shadow-[0_0_15px_rgba(14,165,233,0.3)]">
+                                        <Pulse className="h-4 w-4" />
+                                        NEW_STRATEGY
+                                    </Button>
+                                </Link>
                             </div>
                         )}
                     </div>
@@ -279,6 +282,10 @@ export function DashboardView() {
                                 flows24h="-$12M"
                                 unlockDate="No lock"
                             />
+                        </motion.div>
+
+                        <motion.div variants={item}>
+                            <AnalyticsPanel />
                         </motion.div>
                     </>
                 )}

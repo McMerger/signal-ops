@@ -18,23 +18,61 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    // BYPASS MODE: Default to logged in
-    const [user, setUser] = useState<User | null>({
-        id: "bypass-user",
-        email: "bypass@signalops.com",
-        name: "Operator Bypass",
-        role: "admin"
-    });
-    const [token, setToken] = useState<string | null>("mock_bypass_token");
-    const [isLoading, setIsLoading] = useState(false);
+    const [user, setUser] = useState<User | null>(null);
+    const [token, setToken] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
     const pathname = usePathname();
 
     const { data: session, status } = useSession();
 
-    // useEffect(() => {
-    //     // BYPASS MODE: Logic disabled to persist mock user
-    // }, [session, status]);
+    useEffect(() => {
+        const initAuth = async () => {
+            // Priority 1: Check NextAuth Session (GitHub Login)
+            if (status === "authenticated" && session?.backendToken) {
+                // @ts-ignore
+                const backendToken = session.backendToken as string;
+                // @ts-ignore
+                const backendUser = session.user as User;
+
+                if (backendToken && backendUser) {
+                    setToken(backendToken);
+                    setUser(backendUser);
+                    // Sync to local storage for compatibility
+                    localStorage.setItem('token', backendToken);
+                    localStorage.setItem('user', JSON.stringify(backendUser));
+                    setIsLoading(false);
+                    return;
+                }
+            }
+
+            // Priority 2: Check Local Storage (Legacy Login)
+            const storedToken = authService.getToken();
+            if (storedToken) {
+                // Verify token with backend
+                try {
+                    const verifiedUser = await authService.getCurrentUser();
+                    if (verifiedUser) {
+                        setUser(verifiedUser);
+                        setToken(storedToken);
+                    } else {
+                        // Token invalid
+                        setUser(null);
+                        setToken(null);
+                    }
+                } catch (error) {
+                    console.error("Auth verification failed:", error);
+                    setUser(null);
+                    setToken(null);
+                }
+            }
+            setIsLoading(false);
+        };
+
+        if (status !== "loading") {
+            initAuth();
+        }
+    }, [session, status]);
 
     const login = async (email: string, password: string) => {
         try {

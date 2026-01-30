@@ -8,6 +8,7 @@ import { signIn } from "next-auth/react";
 import { ReticleFrame } from "@/components/ui/context-frames";
 
 export default function LoginPage() {
+    // Force deployment trigger
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");

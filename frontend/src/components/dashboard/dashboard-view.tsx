@@ -107,33 +107,7 @@ export function DashboardView() {
         }
     }, [lastMessage]);
 
-    useEffect(() => {
-        // Poll for Research Data (Beginner Mode Feeds)
-        const fetchResearch = async () => {
-            try {
-                // In a real implementation, these endpoints would return the "Featured" or "Top" items
-                const [intRes, predRes] = await Promise.all([
-                    fetch('/api/v1/research/featured-intrinsic'),
-                    fetch('/api/v1/research/featured-predictions')
-                ]);
 
-                if (intRes.ok && predRes.ok) {
-                    setResearchData({
-                        intrinsic: await intRes.json(),
-                        predictions: await predRes.json()
-                    });
-                }
-            } catch (e) {
-                console.error("Research fetch failed", e);
-            }
-        };
-
-        if (mode === 'beginner') {
-            fetchResearch();
-            const interval = setInterval(fetchResearch, 15000);
-            return () => clearInterval(interval);
-        }
-    }, [mode]);
 
     return (
         <div className="relative min-h-screen">

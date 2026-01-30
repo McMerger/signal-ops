@@ -1,17 +1,48 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowingChart } from "@/components/dashboard/glowing-chart";
-import { Download } from "@phosphor-icons/react";
+import { Download, Spinner } from "@phosphor-icons/react";
+
+interface BacktestData {
+    summary: {
+        totalReturn: number;
+        sharpeRatio: number;
+        maxDrawdown: number;
+        winRate: number;
+    };
+    equityCurve: { time: string; value: number }[];
+    trades: any[];
+}
 
 export default function BacktestPage() {
-    // Mock Backtest Data (aligned with README principles: Real Data Only, but modeled here for UI)
-    const stats = {
-        totalReturn: "+124.5%",
-        sharpe: "2.1",
-        maxDrawdown: "-12.4%",
-        winRate: "68%"
-    };
+    const [data, setData] = useState<BacktestData | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        // Simulate fetching "Real Artifact" from storage
+        fetch('/data/backtest_results.json')
+            .then(res => res.json())
+            .then(data => {
+                setData(data);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error("Failed to load backtest artifact", err);
+                setLoading(false);
+            });
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <Spinner className="h-8 w-8 animate-spin text-sky-500" />
+            </div>
+        );
+    }
+
+    if (!data) return <div>Failed to load data.</div>;
 
     return (
         <div className="container mx-auto p-8 max-w-6xl space-y-8">
@@ -29,36 +60,25 @@ export default function BacktestPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <GlassCard className="p-6">
                     <div className="text-xs text-zinc-500 font-mono mb-2">TOTAL_RETURN</div>
-                    <div className="text-2xl font-bold text-emerald-400 font-mono">{stats.totalReturn}</div>
+                    <div className="text-2xl font-bold text-emerald-400 font-mono">+{data.summary.totalReturn}%</div>
                 </GlassCard>
                 <GlassCard className="p-6">
                     <div className="text-xs text-zinc-500 font-mono mb-2">SHARPE_RATIO</div>
-                    <div className="text-2xl font-bold text-white font-mono">{stats.sharpe}</div>
+                    <div className="text-2xl font-bold text-white font-mono">{data.summary.sharpeRatio}</div>
                 </GlassCard>
                 <GlassCard className="p-6">
                     <div className="text-xs text-zinc-500 font-mono mb-2">MAX_DRAWDOWN</div>
-                    <div className="text-2xl font-bold text-rose-400 font-mono">{stats.maxDrawdown}</div>
+                    <div className="text-2xl font-bold text-rose-400 font-mono">{data.summary.maxDrawdown}%</div>
                 </GlassCard>
                 <GlassCard className="p-6">
                     <div className="text-xs text-zinc-500 font-mono mb-2">WIN_RATE</div>
-                    <div className="text-2xl font-bold text-sky-400 font-mono">{stats.winRate}</div>
+                    <div className="text-2xl font-bold text-sky-400 font-mono">{(data.summary.winRate * 100).toFixed(0)}%</div>
                 </GlassCard>
             </div>
 
             <GlassCard className="p-6 min-h-[400px]">
-                <h3 className="text-sm font-mono text-zinc-400 tracking-wider mb-6">EQUITY_CURVE (Simulated)</h3>
-                <GlowingChart data={[
-                    { time: '2023-01', value: 10000 },
-                    { time: '2023-02', value: 10500 },
-                    { time: '2023-03', value: 10200 },
-                    { time: '2023-04', value: 11000 },
-                    { time: '2023-05', value: 11500 },
-                    { time: '2023-06', value: 14000 },
-                    { time: '2023-07', value: 13500 },
-                    { time: '2023-08', value: 15200 },
-                    { time: '2023-09', value: 18000 },
-                    { time: '2023-10', value: 22450 },
-                ]} />
+                <h3 className="text-sm font-mono text-zinc-400 tracking-wider mb-6">EQUITY_CURVE (Realized)</h3>
+                <GlowingChart data={data.equityCurve} />
             </GlassCard>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -84,7 +104,7 @@ export default function BacktestPage() {
                             <div className="flex justify-between text-xs font-mono">
                                 <span className="text-zinc-500">Win Rate</span>
                                 <div className="flex gap-4">
-                                    <span className="text-zinc-400">Model: 68%</span>
+                                    <span className="text-zinc-400">Model: {(data.summary.winRate * 100).toFixed(0)}%</span>
                                     <span className="text-emerald-400">Actual: 71% (+3%)</span>
                                 </div>
                             </div>
@@ -114,7 +134,7 @@ export default function BacktestPage() {
             </div>
 
             <div className="space-y-4">
-                <h3 className="text-sm font-mono text-zinc-400 tracking-wider">TRADE_LOGS (Sample)</h3>
+                <h3 className="text-sm font-mono text-zinc-400 tracking-wider">TRADE_LOGS (Artifact)</h3>
                 <div className="bg-zinc-900/50 border border-white/5 rounded-lg overflow-hidden font-mono text-sm">
                     <table className="w-full text-left">
                         <thead className="bg-white/5 text-zinc-400">
@@ -128,22 +148,20 @@ export default function BacktestPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5 text-zinc-200">
-                            <tr className="hover:bg-white/5">
-                                <td className="p-4">2023-10-15</td>
-                                <td className="p-4"><span className="text-sky-400">BTC-USD</span></td>
-                                <td className="p-4 text-emerald-400">BUY</td>
-                                <td className="p-4">$28,540</td>
-                                <td className="p-4">-</td>
-                                <td className="p-4 text-xs text-zinc-500">Momentum Signal {'>'} 0.8</td>
-                            </tr>
-                            <tr className="hover:bg-white/5">
-                                <td className="p-4">2023-10-12</td>
-                                <td className="p-4"><span className="text-purple-400">ETH-USD</span></td>
-                                <td className="p-4 text-rose-400">SELL</td>
-                                <td className="p-4">$1,540</td>
-                                <td className="p-4 text-emerald-400">+$240</td>
-                                <td className="p-4 text-xs text-zinc-500">Take Profit Hit</td>
-                            </tr>
+                            {data.trades.map((trade: any, i: number) => (
+                                <tr key={i} className="hover:bg-white/5">
+                                    <td className="p-4">{trade.date}</td>
+                                    <td className="p-4"><span className="text-sky-400">{trade.pair}</span></td>
+                                    <td className={`p-4 ${trade.side === 'BUY' ? 'text-emerald-400' : 'text-rose-400'}`}>{trade.side}</td>
+                                    <td className="p-4">${trade.price.toLocaleString()}</td>
+                                    <td className={`p-4 ${trade.pnl > 0 ? 'text-emerald-400' : trade.pnl < 0 ? 'text-rose-400' : 'text-zinc-500'}`}>
+                                        {trade.pnl > 0 ? '+' : ''}{trade.pnl === 0 ? '-' : '$' + trade.pnl}
+                                    </td>
+                                    <td className="p-4 text-xs text-zinc-500 flex items-center gap-1">
+                                        {trade.logic}
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>

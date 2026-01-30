@@ -1,19 +1,12 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 
 const getApiUrl = () => {
-    // 1. Strict Production Override (Ignores Env Var)
-    if (typeof window !== 'undefined' && (window.location.hostname === 'signal-ops.pages.dev' || window.location.hostname.endsWith('pages.dev'))) {
-        return 'https://execution-core.cortesmailles01.workers.dev';
-    }
-
-    // 2. Explicit Localhost Detection
+    // 1. Explicit Localhost Detection
     if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
         return 'http://localhost:8080';
     }
-    // 3. Env Var Override
-    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
 
-    // 4. Default to Production
+    // 2. Default to Production (Always)
     return 'https://execution-core.cortesmailles01.workers.dev';
 };
 const API_BASE_URL = getApiUrl();

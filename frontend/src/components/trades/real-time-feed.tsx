@@ -18,16 +18,11 @@ export function RealTimeTradeFeed() {
     const [trades, setTrades] = useState<Trade[]>([]);
 
     const getWsUrl = () => {
-        // 1. Strict Production Override (Ignores Env Var)
-        if (typeof window !== 'undefined' && (window.location.hostname === 'signal-ops.pages.dev' || window.location.hostname.endsWith('pages.dev'))) {
-            return 'wss://execution-core.cortesmailles01.workers.dev/ws';
-        }
-
-        // 2. Explicit Localhost Detection
+        // 1. Explicit Localhost Detection
         if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
             return process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080/ws';
         }
-        // 3. Default to Production
+        // 2. Default to Production (Always)
         return 'wss://execution-core.cortesmailles01.workers.dev/ws';
     };
 

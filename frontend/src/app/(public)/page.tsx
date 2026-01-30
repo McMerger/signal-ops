@@ -3,9 +3,9 @@
 import { ScrollManager } from "@/components/landing/scroll-manager";
 import { FeatureShowcase } from "@/components/landing/feature-showcase";
 import { WarpTransitionProvider, useWarpTransition } from "@/components/landing/warp-transition";
-import { VoidSingularity } from "@/components/canvas/public/void-singularity";
+
 import { useState } from "react";
-import { PolyglotEngine } from "@/components/canvas/public/polyglot-engine"; // Re-using engine for features if needed, or just standard showcase. Keeping showcase.
+
 
 function WelcomeContent() {
     const { startTransition } = useWarpTransition();

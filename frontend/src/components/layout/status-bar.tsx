@@ -11,7 +11,7 @@ export function StatusBar() {
         // Side effect logging just to be sure
         if (typeof window !== 'undefined' && !window['v4_log_status_bar' as any]) {
             console.log('[StatusBar] V4 - FORCED PROD WS:', url);
-            window['v4_log_status_bar' as any] = true;
+            (window as any)['v4_log_status_bar'] = true;
         }
         return url;
     };

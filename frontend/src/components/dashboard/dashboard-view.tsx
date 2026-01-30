@@ -50,6 +50,44 @@ export function DashboardView() {
         chartData: []
     });
 
+    const [researchData, setResearchData] = useState<{
+        intrinsic: any[];
+        predictions: any[];
+    }>({ intrinsic: [], predictions: [] });
+
+    useEffect(() => {
+        // Poll for Research Data (Beginner Mode Feeds)
+        const fetchResearch = async () => {
+            try {
+                // Fetch specific reference assets as "Featured"
+                const [intRes, predRes] = await Promise.all([
+                    fetch('/api/v1/research/intrinsic?symbol=AAPL'),
+                    fetch('/api/v1/research/prediction?symbol=RECESSION')
+                ]);
+
+                const intrinsic = intRes.ok ? [await intRes.json()] : [];
+                const prediction = predRes.ok ? [await predRes.json()] : [];
+
+                setResearchData({
+                    intrinsic,
+                    predictions: prediction.map(p => ({
+                        title: `Market: ${p.asset}`,
+                        probability: p.data?.probability || 0.5,
+                        volume: p.data?.volume || 0
+                    }))
+                });
+            } catch (e) {
+                console.error("Research fetch failed", e);
+            }
+        };
+
+        if (mode === 'beginner') {
+            fetchResearch();
+            const interval = setInterval(fetchResearch, 15000);
+            return () => clearInterval(interval);
+        }
+    }, [mode]);
+
     useEffect(() => {
         if (lastMessage?.type === 'portfolio_update') {
             setDashboardData(prev => ({

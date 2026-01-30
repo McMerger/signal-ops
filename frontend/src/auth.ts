@@ -69,10 +69,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
         async session({ session, token }) {
             if (token.backendToken) {
-                // @ts-ignore
-                session.backendToken = token.backendToken;
-                // @ts-ignore
-                session.user = { ...session.user, ...token.backendUser };
+                // Explicit casting to satisfy strict TS
+                session.backendToken = token.backendToken as string;
+                if (session.user) {
+                    session.user.role = (token.backendUser as any)?.role;
+                    // We merge other properties if needed
+                }
             }
             return session;
         }

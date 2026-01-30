@@ -17,10 +17,12 @@ export default function StrategiesPage() {
                     <h1 className="text-2xl font-bold tracking-tight text-white">Strategies</h1>
                     <p className="text-zinc-300">Manage and monitor your algorithmic trading strategies.</p>
                 </div>
-                <Button className="gap-2 bg-sky-500 hover:bg-sky-600 text-white border-none">
-                    <Plus className="h-4 w-4" />
-                    Create Strategy
-                </Button>
+                <Link href="/strategies/create">
+                    <Button className="gap-2 bg-sky-500 hover:bg-sky-600 text-white border-none">
+                        <Plus className="h-4 w-4" />
+                        Create Strategy
+                    </Button>
+                </Link>
             </div>
 
             {isLoading ? (

@@ -16,13 +16,15 @@ import {
     ShieldCheck,
     TerminalWindow,
     Flask,
-    BookBookmark
+    BookBookmark,
+    Pulse,
+    Binoculars,
+    SignOut
 } from "@phosphor-icons/react";
 
 const MotionLink = motion(Link);
 
 import { useAuth } from "@/context/auth-context";
-import { SignOut } from "@phosphor-icons/react";
 
 const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: House },

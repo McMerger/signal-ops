@@ -93,6 +93,8 @@ export function DashboardView() {
                             <p className="text-zinc-400 text-sm mt-1 flex items-center gap-2">
                                 <span className={`w-2 h-2 rounded-full ${isConnected ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`} />
                                 {isConnected ? "SYSTEM ONLINE" : "DISCONNECTED"}
+                                <span className="mx-2 text-zinc-700">|</span>
+                                <span className="bg-amber-500/10 text-amber-500 text-[10px] px-1.5 py-0.5 rounded border border-amber-500/20">PAPER_TRADING</span>
                             </p>
                         </div>
                     </div>

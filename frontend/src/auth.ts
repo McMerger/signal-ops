@@ -50,6 +50,8 @@ async function hmacSha256(key: string, data: string): Promise<string> {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+    trustHost: true,
+    debug: true,
     providers: [GitHub],
     callbacks: {
         async jwt({ token, user, account, profile }) {

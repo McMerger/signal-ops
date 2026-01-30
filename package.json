@@ -6,6 +6,10 @@
     "stop": "docker compose down",
     "clean": "docker compose down -v",
     "dev:python": "cd workers/strategy-engine && npx wrangler dev",
+    "build": "cd frontend && npm install && npm run build:cf",
+    "deploy": "npm run build && npx wrangler deploy",
+    "deploy:frontend": "cd frontend && npx wrangler pages deploy .vercel/output/static",
+    "deploy:backend": "cd workers/execution-core && npx wrangler deploy",
     "test": "echo 'Run tests in specific service folders'"
   },
   "devDependencies": {

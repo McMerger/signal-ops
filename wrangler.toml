@@ -1,0 +1,10 @@
+name = "signal-ops-root"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Point to the Frontend build output by default
+# This allows 'npx wrangler deploy' at root to deploy the site
+pages_build_output_dir = "./frontend/.vercel/output/static"
+
+[vars]
+ENVIRONMENT = "production"

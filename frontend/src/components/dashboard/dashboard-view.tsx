@@ -21,6 +21,8 @@ import { AnalyticsPanel } from "@/components/dashboard/analytics-panel";
 import { OrderBookWidget } from "@/components/dashboard/order-book";
 // StatusOrb removed
 
+import { useUser } from "@/hooks/use-user";
+
 const container = {
     hidden: { opacity: 0 },
     show: {
@@ -38,6 +40,7 @@ const item = {
 
 export function DashboardView() {
     const { mode } = useAppStore();
+    const { data: userPrefs } = useUser(); // Fetch real prefs
     const { isConnected, lastMessage } = useWebSocket({ url: 'ws://localhost:8080/ws' });
     const [dashboardData, setDashboardData] = useState({
         totalBalance: 0,
@@ -98,7 +101,8 @@ export function DashboardView() {
                             <div className="flex gap-3">
                                 <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/5 rounded text-xs text-zinc-400 font-mono hover:bg-white/10 cursor-pointer transition-colors">
                                     <span className="text-zinc-500">WORKSPACE:</span>
-                                    <span className="text-white">DEFAULT_ALPHA</span>
+                                    {/* Real Data: Display persisted workspace name */}
+                                    <span className="text-white uppercase">{userPrefs?.layouts?.active_workspace || 'DEFAULT'}</span>
                                     <ArrowUpRight className="h-3 w-3 rotate-90" />
                                 </div>
                                 <Link href="/strategies/create">

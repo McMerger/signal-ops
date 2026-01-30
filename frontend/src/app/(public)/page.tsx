@@ -19,8 +19,9 @@ function WelcomeContent() {
     return (
         <ScrollManager>
             <main className="min-h-screen bg-background selection:bg-blue-500/30 relative overflow-hidden">
-                {/* 3D Background */}
-                <VoidSingularity warp={warping} />
+                {/* 3D Background - Clean Professional */}
+                <div className="absolute inset-0 bg-background" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-800/20 via-background to-background" />
 
                 {/* Hero Content - Overlay */}
                 <div className="relative z-10 min-h-screen flex flex-col items-center justify-center text-center px-4">

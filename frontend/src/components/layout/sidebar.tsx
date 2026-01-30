@@ -35,7 +35,7 @@ const navigation = [
     { name: "Portfolio", href: "/portfolio", icon: Wallet },
     { name: "Orders", href: "/orders", icon: ListDashes },
     { name: "System Ops", href: "/system", icon: TerminalWindow },
-    { name: "Sim Lab", href: "/lab", icon: Flask },
+    { name: "Sandbox", href: "/sandbox", icon: Flask },
     { name: "Research", href: "/research", icon: BookBookmark },
     { name: "Settings", href: "/settings", icon: Gear },
 ];

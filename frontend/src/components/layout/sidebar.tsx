@@ -55,11 +55,11 @@ export function Sidebar() {
             <nav className="flex-1 space-y-1 px-3 py-4">
                 {navigation.map((item) => {
                     const isActive = pathname === item.href;
-                    // Filter for Beginner Mode: Only show Dashboard, Strategies, Portfolio, Settings
-                    // "Reduced surface area: limited controls" - README
-                    const isBeginnerFriendly = ['Dashboard', 'Strategies', 'Portfolio', 'Settings'].includes(item.name);
-                    const { mode } = useAppStore(); // Need to hook this up inside the component
 
+                    // Filter for Beginner Mode: Only show Dashboard, Strategies, Portfolio, Settings
+                    const isBeginnerFriendly = ['Dashboard', 'Strategies', 'Portfolio', 'Settings'].includes(item.name);
+
+                    // Use the 'mode' from the top-level hook (line 46)
                     if (mode === 'beginner' && !isBeginnerFriendly) return null;
 
                     return (

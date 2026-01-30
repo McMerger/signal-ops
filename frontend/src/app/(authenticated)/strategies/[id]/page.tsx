@@ -9,6 +9,8 @@ import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { PriceChart } from "@/components/dashboard/price-chart";
 
+export const runtime = 'edge';
+
 export default function StrategyDetailsPage() {
     const params = useParams();
     const id = params.id as string;

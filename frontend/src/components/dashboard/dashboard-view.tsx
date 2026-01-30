@@ -183,7 +183,7 @@ export function DashboardView() {
 
 
 
-                    // ... (render)
+
 
                     {mode === 'beginner' && (
                         <div className="space-y-4">

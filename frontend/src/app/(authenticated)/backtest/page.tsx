@@ -2,7 +2,7 @@
 
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowingChart } from "@/components/dashboard/glowing-chart";
-import { ArrowUpRight, FileText, Download } from "@phosphor-icons/react";
+import { Download } from "@phosphor-icons/react";
 
 export default function BacktestPage() {
     // Mock Backtest Data (aligned with README principles: Real Data Only, but modeled here for UI)
@@ -60,6 +60,58 @@ export default function BacktestPage() {
                     { time: '2023-10', value: 22450 },
                 ]} />
             </GlassCard>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Requirement: "Dashboards compare backtested vs realized performance and slippage" */}
+                <GlassCard className="p-6">
+                    <h3 className="text-sm font-mono text-zinc-400 tracking-wider mb-4">PERFORMANCE_DELTA (Realized vs Model)</h3>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-xs font-mono">
+                                <span className="text-zinc-500">Slippage (bps)</span>
+                                <div className="flex gap-4">
+                                    <span className="text-zinc-400">Model: 2.0</span>
+                                    <span className="text-rose-400">Actual: 4.2 (+2.2)</span>
+                                </div>
+                            </div>
+                            <div className="h-2 bg-white/5 rounded-full overflow-hidden flex">
+                                <div className="h-full bg-zinc-600" style={{ width: '20%' }} />
+                                <div className="h-full bg-rose-500" style={{ width: '22%' }} />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-xs font-mono">
+                                <span className="text-zinc-500">Win Rate</span>
+                                <div className="flex gap-4">
+                                    <span className="text-zinc-400">Model: 68%</span>
+                                    <span className="text-emerald-400">Actual: 71% (+3%)</span>
+                                </div>
+                            </div>
+                            <div className="h-2 bg-white/5 rounded-full overflow-hidden relative">
+                                <div className="absolute top-0 left-0 bottom-0 bg-zinc-600 w-[68%]" />
+                                <div className="absolute top-0 left-0 bottom-0 border-r-2 border-emerald-400 w-[71%]" />
+                            </div>
+                        </div>
+                    </div>
+                </GlassCard>
+
+                <GlassCard className="p-6">
+                    <h3 className="text-sm font-mono text-zinc-400 tracking-wider mb-4">DEPLOYMENT_STATUS</h3>
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20 text-amber-500 font-bold text-xs p-2 text-center">
+                            PAPER
+                        </div>
+                        <div>
+                            <div className="text-white font-bold font-mono">Sandbox Environment</div>
+                            <div className="text-xs text-zinc-500">Live Data / Virtual Execution</div>
+                        </div>
+                    </div>
+                    <div className="text-xs text-zinc-500 font-mono border-t border-white/5 pt-3">
+                        To promote to Live Trading, ensure Realized Slippage {'<'} 5.0bps for 7 consecutive days.
+                    </div>
+                </GlassCard>
+            </div>
 
             <div className="space-y-4">
                 <h3 className="text-sm font-mono text-zinc-400 tracking-wider">TRADE_LOGS (Sample)</h3>

@@ -103,12 +103,11 @@ export function DashboardView() {
                         <ModeToggle />
                         {mode === 'pro' && (
                             <div className="flex gap-3">
-                                <Link href="/orders">
-                                    <Button variant="outline" className="gap-2 border-white/10 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white font-mono">
-                                        <Lightning className="h-4 w-4" />
-                                        QUICK_TRADE
-                                    </Button>
-                                </Link>
+                                <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/5 rounded text-xs text-zinc-400 font-mono hover:bg-white/10 cursor-pointer transition-colors">
+                                    <span className="text-zinc-500">WORKSPACE:</span>
+                                    <span className="text-white">DEFAULT_ALPHA</span>
+                                    <ArrowUpRight className="h-3 w-3 rotate-90" />
+                                </div>
                                 <Link href="/strategies/create">
                                     <Button className="gap-2 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/50 hover:border-sky-400 font-mono shadow-[0_0_15px_rgba(14,165,233,0.3)]">
                                         <Pulse className="h-4 w-4" />

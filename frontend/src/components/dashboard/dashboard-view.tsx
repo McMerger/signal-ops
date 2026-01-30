@@ -15,6 +15,8 @@ import { useAppStore } from "@/lib/store";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { IntrinsicValueCard } from "@/components/research/intrinsic-value";
 import { PredictionMarketCard } from "@/components/research/prediction-market";
+import { DecisionTreeCard } from "@/components/research/decision-tree";
+import { OnChainMetricCard } from "@/components/research/on-chain-metric";
 // StatusOrb removed
 
 const container = {
@@ -198,62 +200,89 @@ export function DashboardView() {
                 )}
 
                 {mode === 'pro' && (
-                    <motion.div variants={item} className="grid gap-6 lg:grid-cols-3">
-                        <div className="col-span-2">
-                            <GlassCard className="p-6 h-full min-h-[400px]">
-                                <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-sm font-mono text-zinc-400 tracking-wider">PORTFOLIO_PERFORMANCE</h3>
-                                    <div className="flex gap-2">
-                                        {['1H', '4H', '1D', '1W'].map((tf) => (
-                                            <button key={tf} className="px-3 py-1 text-xs font-mono rounded hover:bg-white/10 text-zinc-500 hover:text-white transition-colors">
-                                                {tf}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                                <GlowingChart data={dashboardData.chartData} />
-                            </GlassCard>
-                        </div>
-
-                        <GlassCard className="p-6 h-full">
-                            <h3 className="text-sm font-mono text-zinc-400 tracking-wider mb-6">RECENT_ACTIVITY</h3>
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:border-emerald-500/30 transition-colors group">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-8 w-8 rounded bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500/20 transition-colors">
-                                            <ArrowUpRight className="h-4 w-4" />
-                                        </div>
-                                        <div>
-                                            <div className="text-sm font-bold text-white font-mono">BUY BTC</div>
-                                            <div className="text-[10px] text-zinc-500 font-mono uppercase">Strategy: Momentum</div>
+                    <>
+                        <motion.div variants={item} className="grid gap-6 lg:grid-cols-3">
+                            <div className="col-span-2">
+                                <GlassCard className="p-6 h-full min-h-[400px]">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className="text-sm font-mono text-zinc-400 tracking-wider">PORTFOLIO_PERFORMANCE</h3>
+                                        <div className="flex gap-2">
+                                            {['1H', '4H', '1D', '1W'].map((tf) => (
+                                                <button key={tf} className="px-3 py-1 text-xs font-mono rounded hover:bg-white/10 text-zinc-500 hover:text-white transition-colors">
+                                                    {tf}
+                                                </button>
+                                            ))}
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <div className="text-sm font-bold text-white font-mono">0.05 BTC</div>
-                                        <div className="text-[10px] text-zinc-500 font-mono">2m ago</div>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:border-emerald-500/30 transition-colors group">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-8 w-8 rounded bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500/20 transition-colors">
-                                            <ArrowUpRight className="h-4 w-4" />
-                                        </div>
-                                        <div>
-                                            <div className="text-sm font-bold text-white font-mono">BUY ETH</div>
-                                            <div className="text-[10px] text-zinc-500 font-mono uppercase">Strategy: Arbitrage</div>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-sm font-bold text-white font-mono">1.2 ETH</div>
-                                        <div className="text-[10px] text-zinc-500 font-mono">15m ago</div>
-                                    </div>
-                                </div>
+                                    <GlowingChart data={dashboardData.chartData} />
+                                </GlassCard>
                             </div>
-                        </GlassCard>
-                    </motion.div>
+
+                            <GlassCard className="p-6 h-full">
+                                <h3 className="text-sm font-mono text-zinc-400 tracking-wider mb-6">RECENT_ACTIVITY</h3>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:border-emerald-500/30 transition-colors group">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-8 w-8 rounded bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500/20 transition-colors">
+                                                <ArrowUpRight className="h-4 w-4" />
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-bold text-white font-mono">BUY BTC</div>
+                                                <div className="text-[10px] text-zinc-500 font-mono uppercase">Strategy: Momentum</div>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-sm font-bold text-white font-mono">0.05 BTC</div>
+                                            <div className="text-[10px] text-zinc-500 font-mono">2m ago</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:border-emerald-500/30 transition-colors group">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-8 w-8 rounded bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500/20 transition-colors">
+                                                <ArrowUpRight className="h-4 w-4" />
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-bold text-white font-mono">BUY ETH</div>
+                                                <div className="text-[10px] text-zinc-500 font-mono uppercase">Strategy: Arbitrage</div>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-sm font-bold text-white font-mono">1.2 ETH</div>
+                                            <div className="text-[10px] text-zinc-500 font-mono">15m ago</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </GlassCard>
+                        </motion.div>
+
+                        {/* Deep Dive Section: Decision Tree & On-Chain (Pro Only) */}
+                        <motion.div variants={item} className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-6">
+                            <DecisionTreeCard
+                                asset="BTC-USD"
+                                decision="BUY"
+                                rules={[
+                                    { name: "Intrinsic Val > Price", passed: true, value: "$65k", threshold: "$62k" },
+                                    { name: "Prediction Mkt > 60%", passed: true, value: "0.65", threshold: "0.60" },
+                                    { name: "On-Chain Outflows", passed: false, value: "-$10M", threshold: "-$50M" }
+                                ]}
+                            />
+                            <OnChainMetricCard
+                                protocol="AAVE"
+                                tvl="$12.4B"
+                                flows24h="+$45M"
+                                unlockDate="2026-03-12"
+                            />
+                            <OnChainMetricCard
+                                protocol="UNISWAP"
+                                tvl="$6.2B"
+                                flows24h="-$12M"
+                                unlockDate="No lock"
+                            />
+                        </motion.div>
+                    </>
                 )}
             </motion.div>
-        </div>
+        </div >
     );
 }

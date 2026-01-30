@@ -51,6 +51,7 @@ async function hmacSha256(key: string, data: string): Promise<string> {
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     trustHost: true,
+    secret: process.env.AUTH_SECRET,
     debug: true,
     providers: [GitHub],
     callbacks: {

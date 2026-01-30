@@ -15,7 +15,7 @@ from datetime import datetime
 from agents.base_agent import BaseAgent
 from agents.trend_follower import TrendFollower
 from agents.mean_reversion import MeanReversion
-from agents.event_driven_agent import EventDrivenAgent, FedHikeAgent
+from agents.PredictionMarketAgent import PredictionMarketAgent, FedHikeAgent
 from agents.meta_bandit_agent import MetaBanditAgent
 from orchestrator.battle_manager import BattleManager
 from scenario_injector import ScenarioInjector

@@ -6,7 +6,7 @@ Run this after setup to check everything is connected.
 import asyncio
 from agents.trend_follower import TrendFollower
 from agents.mean_reversion import MeanReversion
-from agents.event_driven_agent import EventDrivenAgent
+from agents.PredictionMarketAgent import PredictionMarketAgent
 from agents.meta_bandit_agent import MetaBanditAgent
 from market_data.prediction_market_adapter import PredictionMarketFeed
 from orchestrator.battle_manager import BattleManager

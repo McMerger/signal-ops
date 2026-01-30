@@ -1,6 +1,6 @@
 "use client";
 
-import { NeuralOptics } from "@/components/canvas/neural-optics";
+
 import { motion } from "framer-motion";
 import { DecisionList } from "@/components/decisions/decision-list";
 import { DecisionStats } from "@/components/decisions/decision-stats";
@@ -19,13 +19,7 @@ export default function DecisionsPage() {
                 <p className="text-zinc-400 font-mono mt-1">Neural Decision Pathways & Logic Logs</p>
             </motion.div>
 
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 }}
-            >
-                <NeuralOptics />
-            </motion.div>
+
 
             <div className="grid gap-8">
                 <div className="grid gap-8 md:grid-cols-2">

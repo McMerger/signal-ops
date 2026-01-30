@@ -1,6 +1,6 @@
 "use client";
 
-import { PolyglotEngine } from "@/components/canvas/public/polyglot-engine";
+
 import { motion } from "framer-motion";
 import { HexFrame } from "@/components/ui/context-frames";
 import { Cpu, Database, ShieldCheck, Lightning } from "@phosphor-icons/react";
@@ -67,7 +67,7 @@ export default function FeaturesPage() {
                         whileInView={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.2 }}
                     >
-                        <PolyglotEngine />
+                        {/* Visual Removed */}
                     </motion.div>
                 </div>
             </div>

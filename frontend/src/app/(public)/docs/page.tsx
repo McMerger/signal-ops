@@ -5,17 +5,13 @@ import { Hash } from "@phosphor-icons/react";
 import { motion } from "framer-motion";
 import { staggerContainer, staggerItem } from "@/lib/motion-variants";
 import { Canvas } from "@react-three/fiber";
-import { SyntaxFlow } from "@/components/canvas/public/syntax-flow";
+
 
 export default function DocsPage() {
     return (
         <div className="container mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-4 gap-12 font-terminal relative">
             {/* Background Syntax Flow */}
-            <div className="fixed inset-0 z-0 pointer-events-none opacity-10">
-                <Canvas camera={{ position: [0, 0, 10], fov: 60 }}>
-                    <SyntaxFlow />
-                </Canvas>
-            </div>
+
 
             {/* Sidebar Navigation */}
             <div className="lg:col-span-1">

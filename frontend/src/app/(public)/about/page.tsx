@@ -1,6 +1,6 @@
 "use client";
 
-import { ParticleDNA } from "@/components/canvas/public/particle-dna";
+
 import { ScrollFrame } from "@/components/ui/context-frames";
 import { Feather, Clock, ChartBar, Pulse } from "@phosphor-icons/react";
 import { motion } from "framer-motion";
@@ -35,7 +35,7 @@ export default function AboutPage() {
                     </div>
                 </div>
                 <div className="lg:w-1/2 w-full">
-                    <ParticleDNA />
+                    {/* Visual Removed */}
                 </div>
             </div>
 

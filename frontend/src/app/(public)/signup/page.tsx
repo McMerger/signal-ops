@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import { motion } from "framer-motion";
 import { Lightning, CircleNotch } from "@phosphor-icons/react";
-import { GatewayForge } from "@/components/canvas/public/gateway-forge";
+
 import { BlueprintFrame } from "@/components/ui/context-frames";
 
 export default function SignupPage() {
@@ -16,8 +16,7 @@ export default function SignupPage() {
     const [loading, setLoading] = useState(false);
     const { signup } = useAuth();
 
-    // Calculate progress step
-    const step = (name ? 1 : 0) + (email ? 1 : 0) + (password ? 1 : 0);
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -35,7 +34,7 @@ export default function SignupPage() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-zinc-50 relative overflow-hidden font-portal">
             {/* Background Effects */}
-            <GatewayForge step={step} />
+            {/* Background Effects */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none opacity-50" />
 
             <motion.div

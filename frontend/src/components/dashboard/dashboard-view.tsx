@@ -2,7 +2,7 @@
 
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight, CurrencyBtc, Wallet, Pulse, Lightning } from "@phosphor-icons/react";
+import { ArrowUpRight, Wallet, Pulse } from "@phosphor-icons/react";
 import { GlowingChart } from "@/components/dashboard/glowing-chart";
 import { Ticker } from "@/components/dashboard/ticker";
 import { useWebSocket } from "@/hooks/use-websocket";
@@ -16,7 +16,7 @@ import { ModeToggle } from "@/components/ui/mode-toggle";
 import { IntrinsicValueCard } from "@/components/research/intrinsic-value";
 import { PredictionMarketCard } from "@/components/research/prediction-market";
 import { DecisionTreeCard } from "@/components/research/decision-tree";
-import { OnChainMetricCard } from "@/components/research/on-chain-metric";
+
 import { AnalyticsPanel } from "@/components/dashboard/analytics-panel";
 import { OrderBookWidget } from "@/components/dashboard/order-book";
 // StatusOrb removed

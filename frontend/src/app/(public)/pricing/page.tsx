@@ -1,6 +1,6 @@
 "use client";
 
-import { ValueCrystals } from "@/components/canvas/public/value-crystals";
+
 import { motion } from "framer-motion";
 import { CheckCircle, Crown } from "@phosphor-icons/react";
 import { DiamondFrame } from "@/components/ui/context-frames";

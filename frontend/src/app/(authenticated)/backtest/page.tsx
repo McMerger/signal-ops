@@ -92,12 +92,11 @@ export default function BacktestPage() {
                                 <span className="text-zinc-500">Slippage (bps)</span>
                                 <div className="flex gap-4">
                                     <span className="text-zinc-400">Model: 2.0</span>
-                                    <span className="text-rose-400">Actual: 4.2 (+2.2)</span>
+                                    <span className="text-zinc-500">Actual: -- (No Live Trades)</span>
                                 </div>
                             </div>
                             <div className="h-2 bg-white/5 rounded-full overflow-hidden flex">
                                 <div className="h-full bg-zinc-600" style={{ width: '20%' }} />
-                                <div className="h-full bg-rose-500" style={{ width: '22%' }} />
                             </div>
                         </div>
 
@@ -106,12 +105,11 @@ export default function BacktestPage() {
                                 <span className="text-zinc-500">Win Rate</span>
                                 <div className="flex gap-4">
                                     <span className="text-zinc-400">Model: {(data.summary.winRate * 100).toFixed(0)}%</span>
-                                    <span className="text-emerald-400">Actual: 71% (+3%)</span>
+                                    <span className="text-zinc-500">Actual: --</span>
                                 </div>
                             </div>
                             <div className="h-2 bg-white/5 rounded-full overflow-hidden relative">
                                 <div className="absolute top-0 left-0 bottom-0 bg-zinc-600 w-[68%]" />
-                                <div className="absolute top-0 left-0 bottom-0 border-r-2 border-emerald-400 w-[71%]" />
                             </div>
                         </div>
                     </div>

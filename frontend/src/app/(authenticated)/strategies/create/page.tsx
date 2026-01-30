@@ -67,7 +67,14 @@ export default function CreateStrategyPage() {
                             Trigger: <strong>{selection.trigger || 'Standard'}</strong><br />
                             Risk: <strong>Low (Defensive)</strong>
                         </div>
-                        <Button className="w-full max-w-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold h-12">
+                        <Button
+                            className="w-full max-w-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold h-12"
+                            onClick={() => {
+                                // Real implementation: createStrategy.mutate({...})
+                                alert("Strategy Authorized. Sending to Strategy Engine...");
+                                window.location.href = "/dashboard";
+                            }}
+                        >
                             DEPLOY_STRATEGY
                         </Button>
                     </motion.div>

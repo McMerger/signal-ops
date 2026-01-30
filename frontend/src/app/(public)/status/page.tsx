@@ -8,14 +8,19 @@ import React, { useState, useEffect } from "react";
 
 
 const getApiUrl = () => {
-    // 1. Explicit Localhost Detection
+    // 1. Strict Production Override (Ignores Env Var)
+    if (typeof window !== 'undefined' && (window.location.hostname === 'signal-ops.pages.dev' || window.location.hostname.endsWith('pages.dev'))) {
+        return 'https://execution-core.cortesmailles01.workers.dev';
+    }
+
+    // 2. Explicit Localhost Detection
     if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
         return 'http://localhost:8080';
     }
-    // 2. Env Var Override
+    // 3. Env Var Override
     if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
 
-    // 3. Default to Production
+    // 4. Default to Production
     return 'https://execution-core.cortesmailles01.workers.dev';
 };
 const API_URL = getApiUrl();
@@ -179,7 +184,6 @@ export default function StatusPage() {
                     <div className="pointer-events-none opacity-80 scale-75 lg:scale-100">
                         {/* Globe Removed */}
                     </div>
-                    {/* Solarized uses light mode so no mix-blend-screen needed, just opacity */}
                 </div>
             </div>
         </div>

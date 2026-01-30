@@ -1,17 +1,23 @@
 import axios from 'axios';
 
 const getApiUrl = () => {
-    // 1. Explicit Localhost Detection (Client-Side Only)
+    // 1. Strict Production Override (Ignores Env Var)
+    // If we are on the live site, we MUST use the live backend.
+    if (typeof window !== 'undefined' && (window.location.hostname === 'signal-ops.pages.dev' || window.location.hostname.endsWith('pages.dev'))) {
+        return 'https://execution-core.cortesmailles01.workers.dev';
+    }
+
+    // 2. Explicit Localhost Detection (Client-Side Only)
     if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
         return 'http://localhost:8080';
     }
 
-    // 2. Env Var Override (if set)
+    // 3. Env Var Override (if set)
     if (process.env.NEXT_PUBLIC_API_URL) {
         return process.env.NEXT_PUBLIC_API_URL;
     }
 
-    // 3. Default to Production (Safe Fallback for Deployment)
+    // 4. Default to Production (Safe Fallback for Deployment)
     return 'https://execution-core.cortesmailles01.workers.dev';
 };
 const API_URL = getApiUrl();

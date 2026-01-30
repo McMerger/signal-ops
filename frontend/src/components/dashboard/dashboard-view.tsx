@@ -135,116 +135,139 @@ export function DashboardView() {
                         </div>
                     </GlassCard>
 
+                    const [researchData, setResearchData] = useState<{
+        intrinsic: any[];
+                    predictions: any[];
+    }>({intrinsic: [], predictions: [] });
+
+    useEffect(() => {
+        // Poll for Research Data (Beginner Mode Feeds)
+        const fetchResearch = async () => {
+            try {
+                // In a real implementation, these endpoints would return the "Featured" or "Top" items
+                const [intRes, predRes] = await Promise.all([
+                    fetch('/api/v1/research/featured-intrinsic'),
+                    fetch('/api/v1/research/featured-predictions')
+                    ]);
+
+                    if (intRes.ok && predRes.ok) {
+                        setResearchData({
+                            intrinsic: await intRes.json(),
+                            predictions: await predRes.json()
+                        });
+                }
+            } catch (e) {
+                        console.error("Research fetch failed", e);
+            }
+        };
+
+                    if (mode === 'beginner') {
+                        fetchResearch();
+                    const interval = setInterval(fetchResearch, 15000);
+            return () => clearInterval(interval);
+        }
+    }, [mode]);
+
+                    // ... (render)
+
                     {mode === 'beginner' && (
                         <div className="space-y-4">
                             {/* Research Spotlights for Beginner */}
-                            <IntrinsicValueCard symbol="AAPL" price={175.50} intrinsic={210.00} confidence={0.85} />
+                            {researchData.intrinsic.length > 0 ? (
+                                researchData.intrinsic.map((item, i) => (
+                                    <IntrinsicValueCard
+                                        key={i}
+                                        symbol={item.symbol}
+                                        price={item.price}
+                                        intrinsic={item.intrinsic_value}
+                                        confidence={item.confidence}
+                                    />
+                                ))
+                            ) : (
+                                <GlassCard className="p-6">
+                                    <div className="text-center text-xs text-zinc-500 font-mono animate-pulse">
+                                        ANALYZING MARKET FUNDAMENTALS (REAL-TIME)...
+                                    </div>
+                                </GlassCard>
+                            )}
                         </div>
                     )}
+
+                    {/* ... Pro Cards ... */}
+
+                    <motion.div variants={item} className="mt-6">
+                        {mode === 'beginner' && (
+                            <>
+                                <h2 className="text-lg font-bold text-white mb-4">Market Insights (Live)</h2>
+                                {researchData.predictions.length > 0 ? (
+                                    <div className="grid gap-6 md:grid-cols-2">
+                                        {researchData.predictions.map((pred, i) => (
+                                            <PredictionMarketCard
+                                                key={i}
+                                                title={pred.title}
+                                                yesProb={pred.probability}
+                                                volume={pred.volume}
+                                            />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="p-8 border border-white/5 rounded-lg text-center text-zinc-500 font-mono text-xs">
+                                        CONNECTING TO PREDICTION MARKETS (POLYMARKET FEED)...
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </motion.div>
 
                     {mode === 'pro' && (
                         <>
-                            <GlassCard className="p-6 border-amber-500/20 bg-amber-950/10">
-                                <div className="flex items-center justify-between mb-4">
-                                    <span className="text-xs font-mono text-amber-400 tracking-wider">ACTIVE_POSITIONS</span>
-                                    <CurrencyBtc className="h-5 w-5 text-amber-400" />
+                            <motion.div variants={item} className="grid gap-6 lg:grid-cols-3">
+                                <div className="col-span-2">
+                                    <GlassCard className="p-6 h-full min-h-[400px]">
+                                        <div className="flex items-center justify-between mb-6">
+                                            <h3 className="text-sm font-mono text-zinc-400 tracking-wider">PORTFOLIO_PERFORMANCE</h3>
+                                            <div className="flex gap-2">
+                                                {['1H', '4H', '1D', '1W'].map((tf) => (
+                                                    <button key={tf} className="px-3 py-1 text-xs font-mono rounded hover:bg-white/10 text-zinc-500 hover:text-white transition-colors">
+                                                        {tf}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <GlowingChart data={dashboardData.chartData} />
+                                    </GlassCard>
                                 </div>
-                                <div>
-                                    <div className="text-3xl font-bold text-white font-mono tracking-tight">
-                                        <AnimatedNumber value={dashboardData.activePositions} />
-                                    </div>
-                                    <span className="mt-1 text-xs text-zinc-400 font-mono">OPEN TRADES</span>
-                                </div>
-                            </GlassCard>
 
-                            <GlassCard className="p-6 border-purple-500/20 bg-purple-950/10">
-                                <div className="flex items-center justify-between mb-4">
-                                    <span className="text-xs font-mono text-purple-400 tracking-wider">24H_VOLUME</span>
-                                    <Pulse className="h-5 w-5 text-purple-400" />
-                                </div>
-                                <div>
-                                    <div className="text-3xl font-bold text-white font-mono tracking-tight">
-                                        $<AnimatedNumber value={dashboardData.volume24h} format={(v) => (v / 1000000).toFixed(1) + 'M'} />
+                                <GlassCard className="p-6 h-full">
+                                    <h3 className="text-sm font-mono text-zinc-400 tracking-wider mb-6">RECENT_ACTIVITY</h3>
+                                    <div className="space-y-4">
+                                        <div className="text-center py-8 text-xs text-zinc-600 font-mono">
+                                            NO RECENT EXECUTION DETECTED
+                                        </div>
                                     </div>
-                                    <span className="mt-1 text-xs text-zinc-400 font-mono">ACROSS 3 EXCHANGES</span>
-                                </div>
-                            </GlassCard>
+                                </GlassCard>
 
-                            <GlassCard className="p-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <span className="text-xs font-mono text-zinc-400 tracking-wider">SYSTEM_STATUS</span>
-                                    <Lightning className={`h-5 w-5 ${isConnected ? 'text-emerald-400' : 'text-zinc-500'}`} />
+                                <OrderBookWidget />
+                            </motion.div>
+
+                            {/* Deep Dive Section: Decision Tree & On-Chain (Pro Only) */}
+                            <motion.div variants={item} className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-6">
+                                <DecisionTreeCard
+                                    asset="WAITING_SIGNAL"
+                                    decision="--"
+                                    rules={[]}
+                                />
+                                <div className="col-span-2 text-center py-12 border border-white/5 rounded-lg bg-white/5 text-zinc-500 font-mono text-xs">
+                                    WAITING FOR LIVE RESEARCH DATA (ON_CHAIN / PREDICTION)
                                 </div>
-                                <div>
-                                    <div className={`text-xl font-bold font-mono tracking-tight ${isConnected ? 'text-emerald-400' : 'text-zinc-500'}`}>
-                                        {isConnected ? 'OPERATIONAL' : 'DISCONNECTED'}
-                                    </div>
-                                    <span className="mt-1 text-xs text-zinc-500 font-mono">REAL-TIME CONNECTION</span>
-                                </div>
-                            </GlassCard>
+                            </motion.div>
+
+                            <motion.div variants={item}>
+                                <AnalyticsPanel />
+                            </motion.div>
                         </>
                     )}
                 </motion.div>
-
-                {mode === 'beginner' && (
-                    <motion.div variants={item} className="mt-6">
-                        <h2 className="text-lg font-bold text-white mb-4">Market Insights</h2>
-                        <div className="grid gap-6 md:grid-cols-2">
-                            <PredictionMarketCard title="Will the US enter a recession in 2025?" yesProb={0.22} volume={4500000} />
-                            <PredictionMarketCard title="Bitcoin > $100k by Jan 1?" yesProb={0.65} volume={12000000} />
-                        </div>
-                    </motion.div>
-                )}
-
-                {mode === 'pro' && (
-                    <>
-                        <motion.div variants={item} className="grid gap-6 lg:grid-cols-3">
-                            <div className="col-span-2">
-                                <GlassCard className="p-6 h-full min-h-[400px]">
-                                    <div className="flex items-center justify-between mb-6">
-                                        <h3 className="text-sm font-mono text-zinc-400 tracking-wider">PORTFOLIO_PERFORMANCE</h3>
-                                        <div className="flex gap-2">
-                                            {['1H', '4H', '1D', '1W'].map((tf) => (
-                                                <button key={tf} className="px-3 py-1 text-xs font-mono rounded hover:bg-white/10 text-zinc-500 hover:text-white transition-colors">
-                                                    {tf}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <GlowingChart data={dashboardData.chartData} />
-                                </GlassCard>
-                            </div>
-
-                            <GlassCard className="p-6 h-full">
-                                <h3 className="text-sm font-mono text-zinc-400 tracking-wider mb-6">RECENT_ACTIVITY</h3>
-                                <div className="space-y-4">
-                                    <div className="text-center py-8 text-xs text-zinc-600 font-mono">
-                                        NO RECENT EXECUTION DETECTED
-                                    </div>
-                                </div>
-                            </GlassCard>
-
-                            <OrderBookWidget />
-                        </motion.div>
-
-                        {/* Deep Dive Section: Decision Tree & On-Chain (Pro Only) */}
-                        <motion.div variants={item} className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-6">
-                            <DecisionTreeCard
-                                asset="WAITING_SIGNAL"
-                                decision="--"
-                                rules={[]}
-                            />
-                            <div className="col-span-2 text-center py-12 border border-white/5 rounded-lg bg-white/5 text-zinc-500 font-mono text-xs">
-                                WAITING FOR LIVE RESEARCH DATA (ON_CHAIN / PREDICTION)
-                            </div>
-                        </motion.div>
-
-                        <motion.div variants={item}>
-                            <AnalyticsPanel />
-                        </motion.div>
-                    </>
-                )}
-            </motion.div>
         </div >
     );
 }

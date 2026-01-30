@@ -10,6 +10,7 @@ import { signIn } from "next-auth/react";
 import { BlueprintFrame } from "@/components/ui/context-frames";
 
 export default function SignupPage() {
+    // Force deployment trigger v2
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");

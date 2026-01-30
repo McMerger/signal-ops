@@ -13,6 +13,7 @@ import { Providers } from "@/components/providers";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { SceneBackground } from "@/components/canvas/scene-background";
+import { DisclaimerBanner } from "@/components/layout/disclaimer-banner";
 
 const ibmPlexSans = IBM_Plex_Sans({
   weight: ["400", "500", "600", "700"],
@@ -82,6 +83,7 @@ export default function RootLayout({
             <Providers>
               {children}
             </Providers>
+            <DisclaimerBanner />
           </ErrorBoundary>
         </ThemeProvider>
       </body>

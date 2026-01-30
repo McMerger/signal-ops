@@ -5,7 +5,7 @@ import { HudFrame } from "@/components/ui/context-frames";
 import { motion } from "framer-motion";
 import { staggerContainer, staggerItem } from "@/lib/motion-variants";
 import React, { useState, useEffect } from "react";
-import { HolographicGlobe } from "@/components/canvas/holographic-globe";
+
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -166,7 +166,7 @@ export default function StatusPage() {
                 <div className="relative">
                     {/* Read-only globe */}
                     <div className="pointer-events-none opacity-80 scale-75 lg:scale-100">
-                        <HolographicGlobe />
+                        {/* Globe Removed */}
                     </div>
                     {/* Solarized uses light mode so no mix-blend-screen needed, just opacity */}
                 </div>

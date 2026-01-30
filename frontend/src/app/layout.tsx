@@ -12,7 +12,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
-import { SceneBackground } from "@/components/canvas/scene-background";
+
 import { DisclaimerBanner } from "@/components/layout/disclaimer-banner";
 
 const ibmPlexSans = IBM_Plex_Sans({
@@ -79,7 +79,7 @@ export default function RootLayout({
       <body className={`${fontVariables} font-sans bg-background text-foreground antialiased text-base tracking-wide`}>
         <ThemeProvider>
           <ErrorBoundary>
-            <SceneBackground />
+
             <Providers>
               {children}
             </Providers>

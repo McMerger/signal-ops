@@ -53,7 +53,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     trustHost: true,
     secret: process.env.AUTH_SECRET,
     debug: true,
-    providers: [GitHub],
+    providers: [
+        GitHub({
+            clientId: process.env.AUTH_GITHUB_ID?.replace(/"/g, ""),
+            clientSecret: process.env.AUTH_GITHUB_SECRET?.replace(/"/g, ""),
+        })
+    ],
     callbacks: {
         async jwt({ token, user, account, profile }) {
             // Initial sign in

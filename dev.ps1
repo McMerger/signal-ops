@@ -1,28 +1,18 @@
-# SignalOps Development Script - Windows/WSL Wrapper
-# This script runs dev.sh inside WSL where Docker is installed
-
-param(
-    [Parameter(Position = 0)]
-    [string]$Mode = "",
-    
-    [Parameter(Position = 1)]
-    [string]$SubCommand = ""
+param (
+    [string]$command
 )
 
-# Get the WSL path for the current directory (Dynamic or E drive)
+# Convert Windows path E:\signal-ops to WSL path /mnt/e/signal-ops
 $wslPath = "/mnt/e/signal-ops"
 
-# Build the command
-if ($SubCommand -ne "") {
-    $command = "cd $wslPath && ./dev.sh $Mode $SubCommand"
-}
-elseif ($Mode -ne "") {
-    $command = "cd $wslPath && ./dev.sh $Mode"
+if ($command) {
+    Write-Host "Running in WSL: ./dev.sh $command" -ForegroundColor Cyan
+    wsl bash -c "cd $wslPath && ./dev.sh $command"
 }
 else {
-    $command = "cd $wslPath && ./dev.sh"
+    Write-Host "Usage: .\dev.ps1 [command]"
+    Write-Host "  docker           - Start all services (Frontend + Execution + Strategy)"
+    Write-Host "  strategy-engine  - Run Python Strategy Engine specific setup"
+    Write-Host "  stop             - Stop all services"
+    Write-Host "  clean            - Clean Docker containers"
 }
-
-# Run in WSL
-Write-Host "Running in WSL: $command" -ForegroundColor Cyan
-wsl bash -c $command

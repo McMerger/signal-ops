@@ -5,6 +5,7 @@
     "dev": "docker compose up",
     "stop": "docker compose down",
     "clean": "docker compose down -v",
+    "dev:python": "cd workers/strategy-engine && npx wrangler dev",
     "test": "echo 'Run tests in specific service folders'"
   },
   "devDependencies": {

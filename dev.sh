@@ -11,6 +11,7 @@ show_usage() {
     echo "SignalOps Development Environment"
     echo "Usage:"
     echo "  ./dev.sh docker        - Start all services in Docker (Execution + Strategy + Frontend)"
+    echo "  ./dev.sh strategy-engine - Python Strategy Engine: cd workers/strategy-engine (Follow specific Python setup and backtest instructions; backtests run on real historical data)"
     echo "  ./dev.sh stop          - Stop all services"
     echo "  ./dev.sh clean         - Clean up containers"
 }

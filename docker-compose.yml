@@ -21,13 +21,13 @@ services:
   # Strategy Engine (Python Worker)
   python-strategy:
     build:
-      context: python-strategy-engine
+      context: ./workers/strategy-engine
       dockerfile: Dockerfile
     container_name: signalops-python
     ports:
       - "8788:8788"
     volumes:
-      - ./python-strategy-engine:/app
+      - ./workers/strategy-engine:/app
     environment:
       - MOONSHOT_API_KEY=${MOONSHOT_API_KEY}
     networks:

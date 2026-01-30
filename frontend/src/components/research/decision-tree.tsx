@@ -8,7 +8,7 @@ type Rule = {
     threshold: string;
 }
 
-export function DecisionTreeCard({ asset, decision, rules }: { asset: string, decision: 'BUY' | 'SELL' | 'HOLD', rules: Rule[] }) {
+export function DecisionTreeCard({ asset, decision, rules }: { asset: string, decision: 'BUY' | 'SELL' | 'HOLD' | '--', rules: Rule[] }) {
     return (
         <GlassCard className="p-6 border-l-4 border-l-sky-500">
             <div className="flex items-center justify-between mb-4">

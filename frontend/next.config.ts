@@ -11,12 +11,13 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   async rewrites() {
-    // Default to Production URL if env var is missing (Safest for Cloudflare)
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://execution-core.cortesmailles01.workers.dev";
+    // SCORCHED EARTH: Hardcoded Production URL
+    // We explicitly ignore process.env.NEXT_PUBLIC_API_URL to prevents defaults to localhost
+    const apiUrl = "https://execution-core.cortesmailles01.workers.dev";
     return [
       {
         source: "/api/:path*",
-        destination: `${apiUrl}/api/:path*`, // Proxy to backend (Cloudflare Workers Execution Core)
+        destination: `${apiUrl}/api/:path*`, // Proxy to backend
       },
     ];
   },

@@ -6,17 +6,9 @@ import { motion } from "framer-motion";
 import { staggerContainer, staggerItem } from "@/lib/motion-variants";
 import React, { useState, useEffect } from "react";
 
-
-const getApiUrl = () => {
-    // 1. Explicit Localhost Detection
-    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-        return 'http://localhost:8080';
-    }
-
-    // 2. Default to Production (Always)
-    return 'https://execution-core.cortesmailles01.workers.dev';
-};
-const API_URL = getApiUrl();
+// SCORCHED EARTH: Hardcoded Production URL
+const API_URL = 'https://execution-core.cortesmailles01.workers.dev';
+console.log('[Status Page] V4 - FORCED PROD URL:', API_URL);
 
 interface ServiceStatus {
     name: string;

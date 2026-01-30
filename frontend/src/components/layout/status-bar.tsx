@@ -6,12 +6,14 @@ import { useWebSocket } from "@/hooks/use-websocket";
 
 export function StatusBar() {
     const getWsUrl = () => {
-        // 1. Explicit Localhost Detection
-        if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-            return 'ws://localhost:8080/ws';
+        // SCORCHED EARTH: Hardcoded Production URL
+        const url = 'wss://execution-core.cortesmailles01.workers.dev/ws';
+        // Side effect logging just to be sure
+        if (typeof window !== 'undefined' && !window['v4_log_status_bar' as any]) {
+            console.log('[StatusBar] V4 - FORCED PROD WS:', url);
+            window['v4_log_status_bar' as any] = true;
         }
-        // 2. Default to Production (Always)
-        return 'wss://execution-core.cortesmailles01.workers.dev/ws';
+        return url;
     };
     const { lastMessage } = useWebSocket({ url: getWsUrl() });
     const [latency, setLatency] = useState(0);

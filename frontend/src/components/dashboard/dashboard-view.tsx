@@ -42,11 +42,7 @@ export function DashboardView() {
     const { mode } = useAppStore();
     const { data: userPrefs } = useUser(); // Fetch real prefs
     const getWsUrl = () => {
-        // 1. Explicit Localhost Detection
-        if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-            return 'ws://localhost:8080/ws';
-        }
-        // 2. Default to Production (Always)
+        // SCORCHED EARTH: Hardcoded Production URL
         return 'wss://execution-core.cortesmailles01.workers.dev/ws';
     };
     const { isConnected, lastMessage } = useWebSocket({ url: getWsUrl() });

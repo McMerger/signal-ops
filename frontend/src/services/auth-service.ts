@@ -1,18 +1,8 @@
 import axios from 'axios';
 
-const getApiUrl = () => {
-    // 1. Explicit Localhost Detection (Client-Side Only)
-    // ONLY use localhost if we are explicitly on a local dev environment.
-    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-        return 'http://localhost:8080';
-    }
-
-    // 2. Default to Production (Always)
-    // We ignore process.env.NEXT_PUBLIC_API_URL to prevent accidental localhost references in production.
-    return 'https://execution-core.cortesmailles01.workers.dev';
-};
-const API_URL = getApiUrl();
-console.log('[API] Final API_URL:', API_URL);
+// SCORCHED EARTH POLICY: Hardcoded Production URL
+const API_URL = 'https://execution-core.cortesmailles01.workers.dev';
+console.log('[API] V4 - FORCED PROD URL:', API_URL);
 
 export interface User {
     id: string;

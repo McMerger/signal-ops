@@ -1,15 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 
-const getApiUrl = () => {
-    // 1. Explicit Localhost Detection
-    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-        return 'http://localhost:8080';
-    }
-
-    // 2. Default to Production (Always)
-    return 'https://execution-core.cortesmailles01.workers.dev';
-};
-const API_BASE_URL = getApiUrl();
+const API_BASE_URL = 'https://execution-core.cortesmailles01.workers.dev';
+console.log('[API Client] V4 - FORCED PROD URL:', API_BASE_URL);
 
 class APIClient {
     private client: AxiosInstance;

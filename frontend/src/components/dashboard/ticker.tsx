@@ -31,7 +31,6 @@ function TickerItem({ symbol, price, change }: TickerItemProps) {
 
 export function Ticker() {
     const { lastMessage, subscribe } = useWebSocket({ url: 'ws://localhost:8080/ws' });
-    const [activeList, setActiveList] = useState<'crypto' | 'macro' | 'prediction'>('crypto');
 
     const [activeList, setActiveList] = useState<'crypto' | 'macro' | 'prediction'>('crypto');
     const [prices, setPrices] = useState<Record<string, { price: number; change: number }>>({});

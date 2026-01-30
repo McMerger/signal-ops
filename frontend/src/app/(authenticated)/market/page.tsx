@@ -14,11 +14,14 @@ export default function MarketPage() {
                     </div>
                 </GlassCard>
                 <GlassCard className="p-6">
-                    <h3 className="text-sm text-zinc-400 font-mono mb-4">SECTOR_FLOWS</h3>
-                    <div className="space-y-2 font-mono text-sm">
-                        <div className="flex justify-between"><span className="text-zinc-300">L1_CHAINS</span> <span className="text-emerald-400">+4.2%</span></div>
-                        <div className="flex justify-between"><span className="text-zinc-300">DEFI</span> <span className="text-emerald-400">+1.8%</span></div>
-                        <div className="flex justify-between"><span className="text-zinc-300">GAMING</span> <span className="text-rose-400">-0.5%</span></div>
+                    <h3 className="text-sm text-zinc-400 font-mono mb-4">SECTOR_FLOWS (LIVE)</h3>
+                    <div className="space-y-2 font-mono text-sm text-zinc-500">
+                        <div className="flex justify-between border-b border-white/5 pb-2">
+                            <span>SECTOR</span> <span>FLOW (24H)</span>
+                        </div>
+                        <div className="py-8 text-center text-xs opacity-50">
+                            CONNECTING_TO_CHAIN...
+                        </div>
                     </div>
                 </GlassCard>
             </div>

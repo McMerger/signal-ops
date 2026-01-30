@@ -16,8 +16,11 @@ export default function PortfolioPage() {
                 </GlassCard>
                 <GlassCard className="p-6">
                     <h3 className="text-sm text-zinc-400 font-mono mb-4">UNREALIZED_PNL</h3>
-                    <div className="text-4xl font-bold text-emerald-400 font-mono">+$2,450.00</div>
-                    <div className="text-xs text-zinc-500 mt-2">Daily Change: +1.2%</div>
+                    <div className="text-4xl font-bold text-zinc-500 font-mono">--</div>
+                    <div className="text-xs text-zinc-500 mt-2">Daily Change: --%</div>
+                    <div className="mt-4 text-[10px] text-zinc-600 font-mono">
+                        * WAITING_FOR_EXECUTION_CORE_STREAM
+                    </div>
                 </GlassCard>
             </div>
         </div>

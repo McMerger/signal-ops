@@ -1,5 +1,5 @@
 import { PublicNav } from "@/components/layout/public-nav";
-import { SceneBackground } from "@/components/canvas/scene-background";
+
 
 export default function PublicLayout({
     children,

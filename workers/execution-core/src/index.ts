@@ -4,6 +4,7 @@ import { PortfolioController } from './controllers/PortfolioController'
 import { ResearchController } from './controllers/ResearchController'
 import { StrategyController } from './controllers/StrategyController'
 import { MarketController } from './controllers/MarketController'
+import { AuthController } from './controllers/AuthController'
 import { Bindings } from './bindings'
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -28,6 +29,14 @@ app.get('/', (c) => {
         status: 'operational'
     })
 })
+
+// Auth Group
+const authController = new AuthController()
+const auth = new Hono<{ Bindings: Bindings }>()
+auth.post('/login', (c) => authController.login(c))
+auth.post('/signup', (c) => authController.signup(c))
+auth.get('/me', (c) => authController.me(c))
+app.route('/api/auth', auth)
 
 // === API V1 Routes ===
 

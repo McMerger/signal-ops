@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { authService, User } from "@/services/auth-service";
+import { useSession, signOut as nextAuthSignOut } from "next-auth/react";
 
 interface AuthContextType {
     user: User | null;
@@ -23,8 +24,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
 
+    const { data: session, status } = useSession();
+
     useEffect(() => {
         const initAuth = async () => {
+            // Priority 1: Check NextAuth Session (GitHub Login)
+            if (status === "authenticated" && session?.backendToken) {
+                // @ts-ignore
+                const backendToken = session.backendToken as string;
+                // @ts-ignore
+                const backendUser = session.user as User;
+
+                if (backendToken && backendUser) {
+                    setToken(backendToken);
+                    setUser(backendUser);
+                    // Sync to local storage for compatibility
+                    localStorage.setItem('token', backendToken);
+                    localStorage.setItem('user', JSON.stringify(backendUser));
+                    setIsLoading(false);
+                    return;
+                }
+            }
+
+            // Priority 2: Check Local Storage (Legacy Login)
             const storedToken = authService.getToken();
             if (storedToken) {
                 // Verify token with backend
@@ -46,8 +68,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
             setIsLoading(false);
         };
-        initAuth();
-    }, []);
+
+        if (status !== "loading") {
+            initAuth();
+        }
+    }, [session, status]);
 
     const login = async (email: string, password: string) => {
         try {
@@ -73,6 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const logout = () => {
         authService.logout();
+        nextAuthSignOut({ redirect: false });
         setUser(null);
         setToken(null);
         router.push("/login");

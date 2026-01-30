@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import { motion } from "framer-motion";
-import { Lightning, CircleNotch } from "@phosphor-icons/react";
+import { Lightning, CircleNotch, GithubLogo } from "@phosphor-icons/react";
+import { signIn } from "next-auth/react";
 
 import { BlueprintFrame } from "@/components/ui/context-frames";
 
@@ -99,6 +100,24 @@ export default function SignupPage() {
                         className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-none py-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center uppercase tracking-widest shadow-md"
                     >
                         {loading ? <CircleNotch className="animate-spin h-5 w-5" /> : "Forge Uplink"}
+                    </button>
+
+                    <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-zinc-200" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-white px-2 text-zinc-500 font-sans font-bold tracking-widest">Or</span>
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
+                        className="w-full bg-[#24292F] hover:bg-[#24292F]/90 text-white font-bold rounded-none py-3 transition-colors flex items-center justify-center uppercase tracking-widest shadow-md gap-2 font-sans text-xs"
+                    >
+                        <GithubLogo className="h-5 w-5" weight="fill" />
+                        GitHub
                     </button>
                 </form>
 

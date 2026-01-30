@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
-import { Lightning, CircleNotch } from "@phosphor-icons/react";
+import { Lightning, CircleNotch, GithubLogo } from "@phosphor-icons/react";
+import { signIn } from "next-auth/react";
 import { ReticleFrame } from "@/components/ui/context-frames";
 
 export default function LoginPage() {
@@ -97,6 +98,24 @@ export default function LoginPage() {
                         className="w-full bg-[#002b36] hover:bg-[#073642] text-white font-bold rounded-sm py-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center uppercase tracking-widest shadow-lg"
                     >
                         {loading ? <CircleNotch className="animate-spin h-5 w-5" /> : "Access Terminal"}
+                    </button>
+
+                    <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-zinc-200" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-white px-2 text-zinc-500 font-mono tracking-widest">Or continue with</span>
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
+                        className="w-full bg-[#24292F] hover:bg-[#24292F]/90 text-white font-bold rounded-sm py-3 transition-colors flex items-center justify-center uppercase tracking-widest shadow-lg gap-2 font-mono text-sm"
+                    >
+                        <GithubLogo className="h-5 w-5" weight="fill" />
+                        GitHub
                     </button>
                 </form>
 

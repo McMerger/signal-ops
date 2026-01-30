@@ -284,6 +284,7 @@ export function DashboardView() {
                         </>
                     )}
                 </motion.div>
-        </div >
+            </motion.div>
+        </div>
     );
 }

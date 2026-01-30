@@ -30,9 +30,13 @@ function TickerItem({ symbol, price, change }: TickerItemProps) {
 }
 
 export function Ticker() {
-    const isProduction = process.env.NODE_ENV === 'production';
-    const WS_URL = isProduction ? 'wss://execution-core.cortesmailles01.workers.dev/ws' : 'ws://localhost:8080/ws';
-    const { lastMessage, subscribe } = useWebSocket({ url: WS_URL });
+    const getWsUrl = () => {
+        if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            return 'wss://execution-core.cortesmailles01.workers.dev/ws';
+        }
+        return 'ws://localhost:8080/ws';
+    };
+    const { lastMessage, subscribe } = useWebSocket({ url: getWsUrl() });
 
     const [activeList, setActiveList] = useState<'crypto' | 'macro' | 'prediction'>('crypto');
     const [prices, setPrices] = useState<Record<string, { price: number; change: number }>>({});

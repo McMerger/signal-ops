@@ -41,9 +41,13 @@ const item = {
 export function DashboardView() {
     const { mode } = useAppStore();
     const { data: userPrefs } = useUser(); // Fetch real prefs
-    const isProduction = process.env.NODE_ENV === 'production';
-    const WS_URL = isProduction ? 'wss://execution-core.cortesmailles01.workers.dev/ws' : 'ws://localhost:8080/ws';
-    const { isConnected, lastMessage } = useWebSocket({ url: WS_URL });
+    const getWsUrl = () => {
+        if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            return 'wss://execution-core.cortesmailles01.workers.dev/ws';
+        }
+        return 'ws://localhost:8080/ws';
+    };
+    const { isConnected, lastMessage } = useWebSocket({ url: getWsUrl() });
     const [dashboardData, setDashboardData] = useState({
         totalBalance: 0,
         balanceChange: 0,

@@ -1,8 +1,13 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 
-const isProduction = process.env.NODE_ENV === 'production';
-const PRODUCTION_API_URL = 'https://execution-core.cortesmailles01.workers.dev';
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (isProduction ? PRODUCTION_API_URL : 'http://localhost:8080');
+const getApiUrl = () => {
+    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        return 'https://execution-core.cortesmailles01.workers.dev';
+    }
+    return 'http://localhost:8080';
+};
+const API_BASE_URL = getApiUrl();
 
 class APIClient {
     private client: AxiosInstance;

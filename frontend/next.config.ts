@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: `${apiUrl}/api/:path*`, // Proxy to backend (Go execution engine)
+        destination: `${apiUrl}/api/:path*`, // Proxy to backend (Cloudflare Workers Execution Core)
       },
     ];
   },

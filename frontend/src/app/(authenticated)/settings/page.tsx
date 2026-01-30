@@ -52,19 +52,28 @@ export default function SettingsPage() {
                 </Card>
 
                 <Card className="p-6 bg-zinc-900/50 border-white/10 backdrop-blur-md">
-                    <h3 className="text-sm font-medium text-zinc-400 font-mono mb-4">RISK_LIMITS</h3>
+                    <h3 className="text-sm font-medium text-zinc-400 font-mono mb-4">RISK_LIMITS (CONFIGURATION)</h3>
                     <div className="space-y-4">
                         <div className="flex items-center justify-between text-sm">
                             <span className="text-zinc-500">Max Drawdown (Daily)</span>
-                            <span className="font-mono text-white">5.00%</span>
+                            <div className="flex items-center gap-2">
+                                <input type="number" defaultValue={5.0} className="w-16 bg-white/5 border border-white/10 rounded px-2 py-1 text-right font-mono text-white text-xs focus:ring-1 focus:ring-sky-500 outline-none" />
+                                <span className="text-zinc-500">%</span>
+                            </div>
                         </div>
                         <div className="flex items-center justify-between text-sm">
                             <span className="text-zinc-500">Max Leverage</span>
-                            <span className="font-mono text-white">3.0x</span>
+                            <div className="flex items-center gap-2">
+                                <input type="number" defaultValue={3.0} className="w-16 bg-white/5 border border-white/10 rounded px-2 py-1 text-right font-mono text-white text-xs focus:ring-1 focus:ring-sky-500 outline-none" />
+                                <span className="text-zinc-500">x</span>
+                            </div>
                         </div>
                         <div className="flex items-center justify-between text-sm">
                             <span className="text-zinc-500">Daily Loss Limit</span>
-                            <span className="font-mono text-white">$5,000.00</span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-zinc-500">$</span>
+                                <input type="number" defaultValue={5000} className="w-20 bg-white/5 border border-white/10 rounded px-2 py-1 text-right font-mono text-white text-xs focus:ring-1 focus:ring-sky-500 outline-none" />
+                            </div>
                         </div>
                     </div>
                 </Card>

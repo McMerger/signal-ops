@@ -30,7 +30,9 @@ function TickerItem({ symbol, price, change }: TickerItemProps) {
 }
 
 export function Ticker() {
-    const { lastMessage, subscribe } = useWebSocket({ url: 'ws://localhost:8080/ws' });
+    const isProduction = process.env.NODE_ENV === 'production';
+    const WS_URL = isProduction ? 'wss://execution-core.cortesmailles01.workers.dev/ws' : 'ws://localhost:8080/ws';
+    const { lastMessage, subscribe } = useWebSocket({ url: WS_URL });
 
     const [activeList, setActiveList] = useState<'crypto' | 'macro' | 'prediction'>('crypto');
     const [prices, setPrices] = useState<Record<string, { price: number; change: number }>>({});

@@ -5,7 +5,9 @@ import { WifiHigh, WifiSlash, Pulse, Circle } from "@phosphor-icons/react";
 import { useWebSocket } from "@/hooks/use-websocket";
 
 export function StatusBar() {
-    const { lastMessage } = useWebSocket({ url: "ws://localhost:8080/ws" });
+    const isProduction = process.env.NODE_ENV === 'production';
+    const WS_URL = isProduction ? 'wss://execution-core.cortesmailles01.workers.dev/ws' : 'ws://localhost:8080/ws';
+    const { lastMessage } = useWebSocket({ url: WS_URL });
     const [latency, setLatency] = useState(0);
     const [isConnected, setIsConnected] = useState(false);
     const [systemStatus, setSystemStatus] = useState<"ONLINE" | "DEGRADED" | "OFFLINE">("OFFLINE");

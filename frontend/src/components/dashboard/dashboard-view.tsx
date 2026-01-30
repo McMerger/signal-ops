@@ -41,7 +41,9 @@ const item = {
 export function DashboardView() {
     const { mode } = useAppStore();
     const { data: userPrefs } = useUser(); // Fetch real prefs
-    const { isConnected, lastMessage } = useWebSocket({ url: 'ws://localhost:8080/ws' });
+    const isProduction = process.env.NODE_ENV === 'production';
+    const WS_URL = isProduction ? 'wss://execution-core.cortesmailles01.workers.dev/ws' : 'ws://localhost:8080/ws';
+    const { isConnected, lastMessage } = useWebSocket({ url: WS_URL });
     const [dashboardData, setDashboardData] = useState({
         totalBalance: 0,
         balanceChange: 0,

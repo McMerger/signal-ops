@@ -6,7 +6,7 @@ if (process.env.NODE_ENV === "development") {
   setupDevPlatform();
 }
 
-const nextConfig: NextConfig = {
+const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },

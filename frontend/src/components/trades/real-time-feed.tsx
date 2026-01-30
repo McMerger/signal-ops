@@ -17,8 +17,20 @@ interface Trade {
 export function RealTimeTradeFeed() {
     const [trades, setTrades] = useState<Trade[]>([]);
 
+    const getWsUrl = () => {
+        // Priority 1: Runtime Prod Check
+        if (typeof window !== 'undefined' && (window.location.hostname === 'signal-ops.pages.dev' || window.location.hostname.endsWith('pages.dev'))) {
+            return 'wss://execution-core.cortesmailles01.workers.dev/ws';
+        }
+        // Priority 2: Generic Non-Localhost
+        if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            return 'wss://execution-core.cortesmailles01.workers.dev/ws';
+        }
+        return process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080/ws';
+    };
+
     const { isConnected } = useWebSocket({
-        url: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8081',
+        url: getWsUrl(),
         onMessage: (data) => {
             if (data.type === 'trade') {
                 setTrades((prev) => [data.trade, ...prev].slice(0, 50));

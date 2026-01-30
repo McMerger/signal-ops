@@ -10,9 +10,12 @@ const getApiUrl = () => {
         return 'https://execution-core.cortesmailles01.workers.dev';
     }
     // Priority 3: Env Var or Localhost
-    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    const resolvedUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    console.log('[API] Check:', { hostname: typeof window !== 'undefined' ? window.location.hostname : 'SSR', resolved: resolvedUrl });
+    return resolvedUrl;
 };
 const API_URL = getApiUrl();
+console.log('[API] Final API_URL:', API_URL);
 
 export interface User {
     id: string;

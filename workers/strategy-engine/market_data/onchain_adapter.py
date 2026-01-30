@@ -10,7 +10,10 @@ DeFiLlama provides free, open APIs for:
 This data helps identify capital flows before they hit exchanges.
 """
 
-import requests
+try:
+    import requests
+except ImportError:
+    requests = None
 from typing import Dict, Optional, List
 from datetime import datetime, timedelta
 import time

@@ -22,7 +22,7 @@ import asyncio
 from typing import Dict, List, Optional
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
-import numpy as np
+# import numpy as np # Removed for deployment compatibility
 
 from market_data.prediction_market_adapter import PredictionMarketFeed
 from market_data.onchain_adapter import OnChainDataFeed
@@ -339,23 +339,42 @@ class MultiSourceDataFeed:
         }
 
     def _calculate_rsi(self, prices: List[float], period: int = 14) -> float:
-        """Standard RSI calculation."""
-        deltas = np.diff(prices)
-        seed = deltas[:period+1]
-        up = seed[seed >= 0].sum() / period
-        down = -seed[seed < 0].sum() / period
-        rs = up / down if down != 0 else 0
-        rsi = 100 - (100 / (1 + rs))
+        """Standard RSI calculation (Pure Python)."""
+        if len(prices) < period + 1:
+            return 50.0 # Neutral if insufficient data
+            
+        # Calculate deltas
+        deltas = []
+        for i in range(1, len(prices)):
+            deltas.append(prices[i] - prices[i-1])
+            
+        if not deltas:
+            return 50.0
 
-        for delta in deltas[period+1:]:
+        # Initial Average Gain/Loss
+        seed = deltas[:period]
+        up = sum(d for d in seed if d > 0) / period
+        down = -sum(d for d in seed if d < 0) / period
+        
+        if down == 0:
+            return 100.0
+            
+        rs = up / down
+        rsi = 100 - (100 / (1 + rs))
+        
+        # Smoothed RSI
+        for delta in deltas[period:]:
             up_val = delta if delta > 0 else 0
             down_val = -delta if delta < 0 else 0
             
             up = (up * (period - 1) + up_val) / period
             down = (down * (period - 1) + down_val) / period
             
-            rs = up / down if down != 0 else 0
-            rsi = 100 - (100 / (1 + rs))
+            if down == 0:
+                rsi = 100.0
+            else:
+                rs = up / down
+                rsi = 100 - (100 / (1 + rs))
             
         return rsi
 

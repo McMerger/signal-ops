@@ -4,7 +4,9 @@ Baseline strategy for comparison against event-driven agents.
 """
 
 from agents.base_agent import BaseAgent, Signal
-import numpy as np
+# import numpy as np # Removed for deployment compatibility
+
+# Alias for compatibility with StrategyEvaluator import "from agents.trend_follower import TrendFollowerAgent"
 
 
 class TrendFollower(BaseAgent):
@@ -31,14 +33,20 @@ class TrendFollower(BaseAgent):
         if len(self.price_history) > self.slow_period + 10:
             self.price_history.pop(0)
         
-        # Calculate MAs
-        fast_ma = np.mean(self.price_history[-self.fast_period:])
-        slow_ma = np.mean(self.price_history[-self.slow_period:])
+        # Calculate MAs (Pure Python)
+        fast_slice = self.price_history[-self.fast_period:]
+        fast_ma = sum(fast_slice) / len(fast_slice)
+        
+        slow_slice = self.price_history[-self.slow_period:]
+        slow_ma = sum(slow_slice) / len(slow_slice)
         
         # Previous MAs for crossover detection
         if len(self.price_history) > self.slow_period:
-            prev_fast = np.mean(self.price_history[-self.fast_period-1:-1])
-            prev_slow = np.mean(self.price_history[-self.slow_period-1:-1])
+            prev_fast_slice = self.price_history[-self.fast_period-1:-1]
+            prev_fast = sum(prev_fast_slice) / len(prev_fast_slice)
+            
+            prev_slow_slice = self.price_history[-self.slow_period-1:-1]
+            prev_slow = sum(prev_slow_slice) / len(prev_slow_slice)
         else:
             return None
         
@@ -66,3 +74,6 @@ class TrendFollower(BaseAgent):
             agent_name=self.name,
             price=price
         )
+
+# Alias for compatibility with StrategyEvaluator import "from agents.trend_follower import TrendFollowerAgent"
+TrendFollowerAgent = TrendFollower

@@ -9,7 +9,7 @@ Main demo script showcasing the full system:
 
 import asyncio
 import argparse
-import numpy as np
+# import numpy as np # Removed for deployment compatibility
 from datetime import datetime
 
 from agents.base_agent import BaseAgent

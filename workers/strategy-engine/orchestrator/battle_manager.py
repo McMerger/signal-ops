@@ -7,7 +7,7 @@ to all agents each round. Rationale output includes event context.
 
 import asyncio
 from typing import List, Dict, Optional
-import numpy as np
+# import numpy as np # Removed for deployment compatibility
 from agents.base_agent import BaseAgent, Signal
 from datetime import datetime
 from market_data.prediction_market_adapter import PredictionMarketFeed
@@ -107,9 +107,10 @@ class BattleManager:
         return result
     
     def _select_winner(self, signals, epsilon=0.15):
-        """Epsilon-greedy: 15% explore, 85% exploit."""
-        if np.random.random() < epsilon:
-            winner = np.random.choice(signals)
+        """Epsilon-greedy: 15% explore, 85% exploit (Pure Python)."""
+        import random
+        if random.random() < epsilon:
+            winner = random.choice(signals)
             print(f"[Explore] Random: {winner.agent_name}")
             return winner
         

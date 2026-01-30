@@ -11,8 +11,11 @@ Provides Graham value investing metrics:
 These metrics identify undervalued assets for value-based strategies.
 """
 
-import requests
-from typing import Dict, Optional
+try:
+    import requests
+except ImportError:
+    requests = None
+from typing import Dict, Optional, List
 from datetime import datetime
 import json
 

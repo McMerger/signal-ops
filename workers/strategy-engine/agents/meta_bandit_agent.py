@@ -3,7 +3,7 @@ Meta-agent using Thompson Sampling (multi-armed bandit).
 """
 
 from typing import List, Dict, Optional
-import numpy as np
+# import numpy as np # Removed for deployment compatibility
 from agents.base_agent import BaseAgent, Signal
 
 
@@ -18,8 +18,10 @@ class MetaBanditAgent(BaseAgent):
         
         # Beta distribution parameters for each agent
         # Start with uniform prior: Beta(1, 1)
-        self.alpha = np.ones(len(sub_agents))  # successes
-        self.beta = np.ones(len(sub_agents))   # failures
+        # Beta distribution parameters for each agent
+        # Start with uniform prior: Beta(1, 1)
+        self.alpha = [1.0] * len(sub_agents)  # successes
+        self.beta = [1.0] * len(sub_agents)   # failures
         
         # History tracking
         self.selection_history = []
@@ -39,11 +41,12 @@ class MetaBanditAgent(BaseAgent):
         if not signals:
             return None
         
-        # Thompson Sampling: sample from each agent's Beta distribution
-        samples = np.random.beta(self.alpha, self.beta)
+        # Thompson Sampling: sample from each agent's Beta distribution (Pure Python)
+        import random
+        samples = [random.betavariate(a, b) for a, b in zip(self.alpha, self.beta)]
         
         # Pick agent with highest sample
-        best_idx = np.argmax(samples)
+        best_idx = samples.index(max(samples))
         selected = signals[min(best_idx, len(signals)-1)]
         
         # Log this selection
@@ -51,7 +54,7 @@ class MetaBanditAgent(BaseAgent):
             'agent': selected.agent_name,
             'timestamp': market_data.get('timestamp', 0),
             'confidence': samples[best_idx],
-            'all_samples': samples.tolist()
+            'all_samples': samples
         })
         
         # Update signal to show meta-agent provenance

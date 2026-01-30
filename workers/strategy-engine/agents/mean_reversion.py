@@ -4,7 +4,7 @@ Baseline strategy for comparison.
 """
 
 from agents.base_agent import BaseAgent, Signal
-import numpy as np
+# import numpy as np # Removed for deployment compatibility
 
 
 class MeanReversion(BaseAgent):
@@ -31,10 +31,16 @@ class MeanReversion(BaseAgent):
         if len(self.price_history) > self.window + 10:
             self.price_history.pop(0)
         
-        # Calculate Bollinger Bands
+        # Calculate Bollinger Bands (Pure Python)
         recent_prices = self.price_history[-self.window:]
-        mean_price = np.mean(recent_prices)
-        std_price = np.std(recent_prices)
+        if not recent_prices:
+            return None
+            
+        mean_price = sum(recent_prices) / len(recent_prices)
+        
+        # Std Dev
+        variance = sum((x - mean_price) ** 2 for x in recent_prices) / len(recent_prices)
+        std_price = variance ** 0.5
         
         upper_band = mean_price + self.num_std * std_price
         lower_band = mean_price - self.num_std * std_price

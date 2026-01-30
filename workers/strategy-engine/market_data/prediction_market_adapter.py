@@ -5,7 +5,10 @@ Polymarket is crypto-native with broad event coverage: macro, politics,
 crypto, culture. Public API requires no authentication for market data.
 """
 
-import requests
+try:
+    import requests
+except ImportError:
+    requests = None
 from typing import Dict, Optional, List
 from datetime import datetime
 

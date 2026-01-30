@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Dict, Optional
-import numpy as np
+import math
 
 @dataclass
 class Signal:
@@ -65,8 +65,21 @@ class BaseAgent(ABC):
         }
     
     def _calculate_sharpe(self):
-        """Annualized Sharpe ratio."""
+        """Annualized Sharpe ratio (Pure Python)."""
         if not self.trades:
             return 0.0
         returns = [t['pnl'] for t in self.trades]
-        return np.mean(returns) / (np.std(returns) + 1e-6) * np.sqrt(252)
+        if not returns:
+            return 0.0
+            
+        # Mean
+        mean_ret = sum(returns) / len(returns)
+        
+        # Std Dev
+        variance = sum((x - mean_ret) ** 2 for x in returns) / len(returns)
+        std_dev = variance ** 0.5
+        
+        if std_dev == 0:
+            return 0.0
+            
+        return (mean_ret / std_dev) * (252 ** 0.5)

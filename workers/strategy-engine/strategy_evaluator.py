@@ -7,7 +7,11 @@ import os
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
-from openai import OpenAI  # Kimi is OpenAI-compatible
+try:
+    from openai import OpenAI  # Kimi is OpenAI-compatible
+except ImportError:
+    OpenAI = None
+    logging.warning("OpenAI module not found. Kimi research features will be disabled.")
 
 from agents.base_agent import BaseAgent
 from agents.FundamentalAgent import FundamentalAgent

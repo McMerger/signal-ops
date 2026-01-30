@@ -6,7 +6,7 @@ import logging
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-import numpy as np
+# import numpy as np # Removed for deployment compatibility
 
 from strategy_evaluator import StrategyEvaluator, Decision
 
@@ -248,24 +248,30 @@ class BacktestEngine:
             if dd > max_dd:
                 max_dd = dd
         
-        # Win rate and average win/loss
+        # Win rate and average win/loss (Pure Python)
         winning_trades = [t for t in trades if t.pnl > 0]
         losing_trades = [t for t in trades if t.pnl < 0]
         
         win_rate = len(winning_trades) / len([t for t in trades if t.action == 'SELL']) if trades else 0.0
-        avg_win = np.mean([t.pnl for t in winning_trades]) if winning_trades else 0.0
-        avg_loss = np.mean([t.pnl for t in losing_trades]) if losing_trades else 0.0
+        
+        avg_win = sum(t.pnl for t in winning_trades) / len(winning_trades) if winning_trades else 0.0
+        avg_loss = sum(t.pnl for t in losing_trades) / len(losing_trades) if losing_trades else 0.0
         
         # Sharpe ratio (simplified)
+        sharpe_ratio = 0.0
         if len(equity_curve) > 1:
             returns = [
                 (equity_curve[i][1] - equity_curve[i-1][1]) / equity_curve[i-1][1]
                 for i in range(1, len(equity_curve))
             ]
-            if returns and np.std(returns) > 0:
-                sharpe_ratio = (np.mean(returns) / np.std(returns)) * np.sqrt(252)  # Annualized
-            else:
-                sharpe_ratio = 0.0
+            
+            if returns:
+                 mean_ret = sum(returns) / len(returns)
+                 variance = sum((x - mean_ret) ** 2 for x in returns) / len(returns)
+                 std_dev = variance ** 0.5
+                 
+                 if std_dev > 0:
+                     sharpe_ratio = (mean_ret / std_dev) * (252 ** 0.5)  # Annualized
         else:
             sharpe_ratio = 0.0
         
